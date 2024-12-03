@@ -7,18 +7,18 @@ import jakarta.persistence.*
 data class PurchaseItem(
 
     @Id
-    @Column(name = "id")
+    @Column(name = "id", nullable = true)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Int,
+    val id: Int? = null,
 
     @Column(name = "purchase_id")
-    val purchaseId: Int,
+    val purchaseId: Long,
 
     @Column(name = "count")
     val count: Int,
 
-    @Column(name = "card_quality")
-    val cardQuality: String,
+    @Column(name = "condition")
+    val condition: String,
 
     @Column(name = "price")
     val price: Double,

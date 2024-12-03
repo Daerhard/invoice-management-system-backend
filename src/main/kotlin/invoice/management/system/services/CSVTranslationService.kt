@@ -1,98 +1,102 @@
 package invoice.management.system.services
 
-import com.opencsv.CSVParser
 import com.opencsv.CSVParserBuilder
-import com.opencsv.CSVReader
-import org.springframework.stereotype.Service
 import com.opencsv.CSVReaderBuilder
-import jakarta.annotation.PostConstruct
+import org.springframework.stereotype.Service
 import java.io.FileReader
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 @Service
-class TranslationService(
-    private val databaseImportService: DatabaseImportService,
-    private val entityConversionService: EntityConversionService
-) {
+class CSVTranslationService {
 
-    @PostConstruct
-    fun onStartup() {
-        // Access file in resources/import_files
-//        val filePath = this::class.java.classLoader.getResource("import_files/fileName.csv")?.path
-//            ?: throw IllegalArgumentException("File not found in resources/import_files!")
-
-        val filePath =
-            this::class.java.classLoader.getResource("import_files/Orders-byPaymentDate-2024-10-01_2024-10-31.csv")?.path
-                ?: throw IllegalArgumentException("File not found in resources/import_files!")
-
-        val csvParser: CSVParser = CSVParserBuilder().withSeparator(';').build()
-        val csvReader = CSVReaderBuilder(FileReader(filePath)).withCSVParser(csvParser).build()
-        val orders = translateOrders(csvReader)
-
-        val customers = entityConversionService.convertToCustomers(orders)
-        databaseImportService.saveCustomers(customers)
-
-        val cards = entityConversionService.convertToCards(orders)
-        databaseImportService.saveCards(cards)
-
+    companion object {
+        private val CSV_PARSER = CSVParserBuilder().withSeparator(';').build()
+        private val DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
     }
 
-    fun translateOrders(csvReader: CSVReader): List<Order> {
-        val orders = mutableListOf<Order>()
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-
-        csvReader.use { reader ->
-            val rows = reader.readAll()
-            rows.drop(1).forEach { fields ->
-                orders.add(
-                    Order(
-                        orderId = fields[0].toLong(),
-                        username = fields[1],
-                        name = fields[2],
-                        street = fields[3],
-                        city = fields[4],
-                        country = fields[5],
-                        isProfessional = fields[6].takeIf { it.isNotEmpty() }?.toBoolean(),
-                        vatNumber = fields[7].takeIf { it.isNotEmpty() },
-                        dateOfPayment = LocalDateTime.parse(fields[8], formatter),
-                        articleCount = fields[9].toInt(),
-                        merchandiseValue = fields[10].replace(",", ".").toDouble(),
-                        shipmentCosts = fields[11].replace(",", ".").toDouble(),
-                        totalValue = fields[12].replace(",", ".").toDouble(),
-                        commission = fields[13].replace(",", ".").toDouble(),
-                        currency = fields[14],
-                        completeDescription = fields[15],
-                        splitDescription = fields[15].split("|").map { it.trim() },
-                        productIds = fields[16].split("|").map { it.trim().toLong() },
-                        localizedProductNames = fields[17].split("|").map { it.trim() }
-                    )
-                )
-
+    fun translateOrders(filePath: String): List<Order> {
+        return CSVReaderBuilder(FileReader(filePath))
+            .withCSVParser(CSV_PARSER)
+            .build()
+            .use { reader ->
+                reader.readAll()
+                    .drop(1) // Skip header row
+                    .map { fields -> parseOrder(fields) }
             }
+    }
+
+    private fun parseOrder(fields: Array<String>): Order {
+        val completeDescription = fields[15]
+        val splitDescription = splitField(completeDescription)
+        val localizedProductNames = splitField(fields[17])
+        val productIds = splitField(fields[16]).map(String::toLong)
+
+        return Order(
+            orderId = fields[0].toLong(),
+            username = fields[1],
+            name = fields[2],
+            street = fields[3],
+            city = fields[4],
+            country = fields[5],
+            isProfessional = fields[6].takeIf { it.isNotEmpty() }?.toBoolean(),
+            vatNumber = fields[7].takeIf { it.isNotEmpty() },
+            dateOfPayment = LocalDateTime.parse(fields[8], DATE_FORMATTER),
+            articleCount = fields[9].toInt(),
+            merchandiseValue = fields[10].toDoubleOrNull() ?: 0.0,
+            shipmentCosts = fields[11].toDoubleOrNull() ?: 0.0,
+            totalValue = fields[12].toDoubleOrNull() ?: 0.0,
+            commission = fields[13].toDoubleOrNull() ?: 0.0,
+            currency = fields[14],
+            completeDescription = completeDescription,
+            splitDescription = splitDescription,
+            productIds = productIds,
+            localizedProductNames = localizedProductNames,
+            orderProducts = createOrderProducts(localizedProductNames, productIds, splitDescription)
+        )
+    }
+
+    private fun splitField(field: String): List<String> {
+        return field.split("|").map { it.trim() }
+    }
+
+    private fun createOrderProducts(
+        localizedProductNames: List<String>,
+        productIds: List<Long>,
+        splitDescription: List<String>
+    ): List<OrderProduct> {
+        return localizedProductNames.zip(productIds).zip(splitDescription) { (name, id), description ->
+            OrderProduct(id, name, description, ProductDescriptionService().convertDescription(description))
         }
-        return orders
     }
 }
 
 data class Order(
-    val orderId: Long,                  // 0: Unique Order ID
-    val username: String,               // 1: Username
-    val name: String,                   // 2: Customer's Full Name
-    val street: String,                 // 3: Street Address
-    val city: String,                   // 4: City
-    val country: String,                // 5: Country
-    val isProfessional: Boolean?,       // 6: Indicates if the customer is a professional (nullable)
-    val vatNumber: String?,             // 7: VAT Number (nullable)
-    val dateOfPayment: LocalDateTime,   // 8: Date of Payment
-    val articleCount: Int,              // 9: Count of Articles
-    val merchandiseValue: Double,       // 10: Value of Merchandise
-    val shipmentCosts: Double,          // 11: Shipment Costs
-    val totalValue: Double,             // 12: Total Order Value
-    val commission: Double,             // 13: Commission Fee
-    val currency: String,               // 14: Currency (e.g., EUR)
-    val completeDescription: String,    // 15: Detailed Description of Products
-    val splitDescription: List<String>, // 16: Split Description of Products
-    val productIds: List<Long>,         // 17: List of Product IDs
-    val localizedProductNames: List<String> // 18: List of Localized Product Names
+    val orderId: Long,
+    val username: String,
+    val name: String,
+    val street: String,
+    val city: String,
+    val country: String,
+    val isProfessional: Boolean?,
+    val vatNumber: String?,
+    val dateOfPayment: LocalDateTime,
+    val articleCount: Int,
+    val merchandiseValue: Double,
+    val shipmentCosts: Double,
+    val totalValue: Double,
+    val commission: Double,
+    val currency: String,
+    val completeDescription: String,
+    val splitDescription: List<String>,
+    val productIds: List<Long>,
+    val localizedProductNames: List<String>,
+    val orderProducts: List<OrderProduct> = emptyList()
+)
+
+data class OrderProduct(
+    val productId: Long,
+    val localizedName: String,
+    val description: String,
+    val descriptionDetail: DescriptionDetail
 )

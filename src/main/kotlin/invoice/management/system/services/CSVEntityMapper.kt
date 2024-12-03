@@ -1,122 +1,88 @@
 package invoice.management.system.services
 
-import invoice.management.system.entities.Card
-import invoice.management.system.entities.CardId
-import invoice.management.system.entities.Customer
+import invoice.management.system.entities.*
 import org.springframework.stereotype.Service
 
 @Service
-class EntityConversionService {
+class CSVEntityMapper {
 
     fun convertToCustomers(orders: List<Order>): List<Customer> {
-        val customers = mutableListOf<Customer>()
-
-        orders.forEach { order ->
-            customers.add(
-                Customer(
-                    userName = order.username,
-                    fullName = order.name,
-                    street = order.street,
-                    city = order.city,
-                    country = order.country,
-                    isProfessional = order.isProfessional ?: false,
-                )
+        return orders.map { order ->
+            Customer(
+                userName = order.username,
+                fullName = order.name,
+                street = order.street,
+                city = order.city,
+                country = order.country,
+                isProfessional = order.isProfessional ?: false
             )
         }
-        return customers
     }
 
     fun convertToCards(orders: List<Order>): List<Card> {
-        val cards = mutableListOf<Card>()
-
-        orders.forEach { orderProduct ->
-            val orderOrderProducts =
-                orderProduct.localizedProductNames.zip(orderProduct.productIds).zip(orderProduct.splitDescription) { (name, id), desc ->
-                    OrderProduct(productId = id, localizedName = name, description = desc)
-                }
-
-            orderOrderProducts.forEach { product ->
-                cards.add(
-                    createCard(product)
-                )
+        return orders.flatMap { order ->
+            order.orderProducts.map { product ->
+                createCard(product)
             }
-
         }
-        return cards
     }
 
     private fun createCard(orderProduct: OrderProduct): Card {
-        val description = checkDescription(orderProduct.description)
-
-        /*
-        if(description.split("(")[0].contains(" - ")) {
-
-            val test2 = description.split(" (")
-
-            val test = description.split(" - ")
-        }
-
-         */
-
-
-        val splitDescription = description.split(" - ")
-
-        val productTitle = convertProductTitle(splitDescription)
+        val descriptionDetail = orderProduct.descriptionDetail
 
         return Card(
             id = CardId(
-                konamiSet = productTitle.konamiSet,
-                number = splitDescription[1].toInt()
+                konamiSet = descriptionDetail.konamiSet,
+                number = descriptionDetail.productNumber
             ),
             completeDescription = orderProduct.description,
-            productName = productTitle.cardName,
+            productName = descriptionDetail.productName,
             name = orderProduct.localizedName,
-            language = splitDescription[4],
-            condition = splitDescription[3],
-            rarity = splitDescription[2],
-            isFirstEdition = splitDescription[5].toBoolean(),
+            language = descriptionDetail.language,
+            condition = descriptionDetail.condition,
+            rarity = descriptionDetail.rarity,
+            isFirstEdition = descriptionDetail.isFirstEdition,
             productId = orderProduct.productId
         )
     }
+}
 
-    private fun checkDescription(description: String): String{
-        val standardRegex = Regex("""^\d+x\s.+?\s\([^)]+\)\s-\s\d+\s-\s.+?\s-\s.+?\s-\s.+?\s-\s\d+,\d+\s[A-Z]{3}$""")
-        val differentCardVersionRegex = Regex(
-            """^\d+x\s.+?\s\([^)]+\)\s\([^)]+\)\s-\s\d+\s-\s.+?\s-\s.+?\s-\s.+?\s-\s\d+,\d+\s[A-Z]{3}$"""
+fun convertToPurchase(orders: List<Order>, customers: List<Customer>, cards: List<Card>): List<Purchase> {
+    return orders.map { order ->
+        val customer = customers.find { it.userName == order.username }
+            ?: throw IllegalArgumentException("Customer not found for username: ${order.username}")
+
+        Purchase(
+            customer = customer,
+            orderId = order.orderId,
+            dateOfPayment = order.dateOfPayment,
+            articleCount = order.articleCount,
+            merchandiseValue = order.merchandiseValue,
+            shipmentCost = order.shipmentCosts,
+            totalValue = order.totalValue,
+            commission = order.commission,
+            currency = order.currency,
+            purchaseItems = createPurchaseItems(order, cards)
         )
-
-        when{
-            differentCardVersionRegex.matches(description) -> {
-                val regex = Regex("""\s\([^)]+\)""")
-
-                return description.replaceFirst(regex, "").trim()
-            }
-             standardRegex.matches(description) -> {
-                 return description
-             }
-            else -> {
-                throw IllegalArgumentException("Description: $description does not match format")
-            }
-        }
-    }
-
-    private fun convertProductTitle(productTitleString: List<String>): ProductTitle {
-        val regex = Regex("""^\d+x\s""")
-        val splitProductTitle = productTitleString[0].split(" (")
-
-        return ProductTitle(
-            splitProductTitle[0].replace(regex, ""),
-            splitProductTitle[1].trimEnd(')'))
     }
 }
 
-data class ProductTitle(
-    var cardName: String,
-    var konamiSet: String
-)
+private fun createPurchaseItems(order: Order, cards: List<Card>): List<PurchaseItem> {
+    return order.orderProducts.map { orderProduct ->
+        val card = cards.find {
+            it.id == CardId(
+                konamiSet = orderProduct.descriptionDetail.konamiSet,
+                number = orderProduct.descriptionDetail.productNumber
+            )
+        } ?: throw IllegalArgumentException("Card not found for product ID: ${orderProduct.productId}")
 
-data class OrderProduct(
-    val productId: Long,
-    val localizedName: String,
-    val description: String
-)
+        PurchaseItem(
+            id = null,
+            purchaseId = order.orderId,
+            count = order.articleCount,
+            condition = orderProduct.descriptionDetail.condition,
+            price = orderProduct.descriptionDetail.price,
+            card = card
+        )
+    }
+}

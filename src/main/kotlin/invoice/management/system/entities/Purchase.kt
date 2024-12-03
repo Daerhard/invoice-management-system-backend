@@ -1,29 +1,25 @@
 package invoice.management.system.entities
 
 import jakarta.persistence.*
-import java.sql.Date
-import java.time.Instant
+import java.time.LocalDateTime
 
 @Entity
 @Table(name = "purchase")
 data class Purchase(
 
     @Id
-    @Column(name = "id")
+    @Column(name = "id", nullable = true)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Int,
+    val id: Int? = null,
 
-    @Column(name = "customer_id")
-    val customerId: Int,
+    @ManyToOne
+    val customer: Customer,
 
     @Column(name = "order_id")
     val orderId: Long,
 
     @Column(name = "date_of_payment")
-    val dateOfPayment: Date,
-
-    @Column(name = "time_of_payment")
-    val timeOfPayment: Instant,
+    val dateOfPayment: LocalDateTime,
 
     @Column(name = "article_count")
     val articleCount: Int,
