@@ -1,15 +1,13 @@
 package invoice.management.system.services
 
-import com.opencsv.CSVParser
-import com.opencsv.CSVParserBuilder
-import com.opencsv.CSVReaderBuilder
 import jakarta.annotation.PostConstruct
 import org.springframework.stereotype.Service
 
 @Service
 class CSVImportService(
     private val csvTranslationService: CSVTranslationService,
-    private val CSVEntityMapper: CSVEntityMapper,
+    private val csvEntityMapper: CSVEntityMapper,
+    private val databaseImportService: DatabaseImportService
 ) {
 
     @PostConstruct
@@ -30,10 +28,14 @@ class CSVImportService(
 
         val orders = csvTranslationService.translateOrders(filePath)
 
-        val customer = CSVEntityMapper.convertToCustomers(orders)
+        val customers = csvEntityMapper.convertToCustomers(orders)
+        databaseImportService.saveCustomers(customers)
 
-        val card = CSVEntityMapper.convertToCards(orders)
+        val cards = csvEntityMapper.convertToCards(orders)
+        databaseImportService.saveCards(cards)
 
+        val purchases = csvEntityMapper.convertToPurchases(orders, customers, cards)
+        databaseImportService.savePurchases(purchases)
 
     }
 

@@ -45,44 +45,44 @@ class CSVEntityMapper {
             productId = orderProduct.productId
         )
     }
-}
 
-fun convertToPurchase(orders: List<Order>, customers: List<Customer>, cards: List<Card>): List<Purchase> {
-    return orders.map { order ->
-        val customer = customers.find { it.userName == order.username }
-            ?: throw IllegalArgumentException("Customer not found for username: ${order.username}")
+    fun convertToPurchases(orders: List<Order>, customers: List<Customer>, cards: List<Card>): List<Purchase> {
+        return orders.map { order ->
+            val customer = customers.find { it.userName == order.username }
+                ?: throw IllegalArgumentException("Customer not found for username: ${order.username}")
 
-        Purchase(
-            customer = customer,
-            orderId = order.orderId,
-            dateOfPayment = order.dateOfPayment,
-            articleCount = order.articleCount,
-            merchandiseValue = order.merchandiseValue,
-            shipmentCost = order.shipmentCosts,
-            totalValue = order.totalValue,
-            commission = order.commission,
-            currency = order.currency,
-            purchaseItems = createPurchaseItems(order, cards)
-        )
-    }
-}
-
-private fun createPurchaseItems(order: Order, cards: List<Card>): List<PurchaseItem> {
-    return order.orderProducts.map { orderProduct ->
-        val card = cards.find {
-            it.id == CardId(
-                konamiSet = orderProduct.descriptionDetail.konamiSet,
-                number = orderProduct.descriptionDetail.productNumber
+            Purchase(
+                customer = customer,
+                orderId = order.orderId,
+                dateOfPayment = order.dateOfPayment,
+                articleCount = order.articleCount,
+                merchandiseValue = order.merchandiseValue,
+                shipmentCost = order.shipmentCosts,
+                totalValue = order.totalValue,
+                commission = order.commission,
+                currency = order.currency,
+                purchaseItems = createPurchaseItems(order, cards)
             )
-        } ?: throw IllegalArgumentException("Card not found for product ID: ${orderProduct.productId}")
+        }
+    }
 
-        PurchaseItem(
-            id = null,
-            purchaseId = order.orderId,
-            count = order.articleCount,
-            condition = orderProduct.descriptionDetail.condition,
-            price = orderProduct.descriptionDetail.price,
-            card = card
-        )
+    private fun createPurchaseItems(order: Order, cards: List<Card>): List<PurchaseItem> {
+        return order.orderProducts.map { orderProduct ->
+            val card = cards.find {
+                it.id == CardId(
+                    konamiSet = orderProduct.descriptionDetail.konamiSet,
+                    number = orderProduct.descriptionDetail.productNumber
+                )
+            } ?: throw IllegalArgumentException("Card not found for product ID: ${orderProduct.productId}")
+
+            PurchaseItem(
+                id = null,
+                purchaseId = order.orderId,
+                count = order.articleCount,
+                condition = orderProduct.descriptionDetail.condition,
+                price = orderProduct.descriptionDetail.price,
+                card = card
+            )
+        }
     }
 }

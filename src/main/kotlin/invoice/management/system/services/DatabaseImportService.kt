@@ -2,8 +2,10 @@ package invoice.management.system.services
 
 import invoice.management.system.entities.Card
 import invoice.management.system.entities.Customer
+import invoice.management.system.entities.Purchase
 import invoice.management.system.repositories.CardRepository
 import invoice.management.system.repositories.CustomerRepository
+import invoice.management.system.repositories.PurchaseRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Service
 class DatabaseImportService(
     private val customerRepository: CustomerRepository,
     private val cardRepository: CardRepository,
+    private val purchaseRepository: PurchaseRepository
 ) {
 
     fun saveCustomers(customers: List<Customer>) {
@@ -34,6 +37,12 @@ class DatabaseImportService(
     fun saveCards(cards: List<Card>) {
         cards.map { card ->
             cardRepository.findByIdOrNull(card.id) ?: cardRepository.save(card)
+        }
+    }
+
+    fun savePurchases(purchases: List<Purchase>) {
+        purchases.map { purchase ->
+            purchaseRepository.findByOrderId(purchase.orderId) ?: purchaseRepository.save(purchase)
         }
     }
 

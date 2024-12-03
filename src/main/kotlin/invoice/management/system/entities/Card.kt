@@ -23,9 +23,6 @@ data class Card(
     @Column(name = "language")
     val language: String,
 
-    @Column(name = "condition")
-    val condition: String,
-
     @Column(name = "rarity")
     val rarity: String,
 
