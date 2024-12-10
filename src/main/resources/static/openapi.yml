@@ -1,0 +1,223 @@
+openapi: '3.0.1'
+info:
+  title: invoice management system
+  version: 1.0.0
+
+servers:
+  - url: 'http://localhost:8080/invoice-management-system/api/'
+    description: local server
+
+paths:
+  /v1/customers:
+    get:
+      tags:
+        - customers
+      summary: get all customers
+      description: returns all customers
+      operationId: getAllCustomers
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/customer'
+        '400':
+          description: invalid user id supplied in authentication token
+        '401':
+          description: not authenticated
+
+  /v1/import:
+    post:
+      tags:
+        - csv-import
+      summary: import csv data
+      description: import csv data
+      operationId: importCSVData
+      responses:
+        '201':
+          description: customers successfully imported
+        '400':
+          description: validation exception
+
+  /v1/orders/{userName}:
+    get:
+      tags:
+        - orders
+      summary: get all orders by user name
+      description: returns all orders by user name
+      operationId: getOrdersByUserName
+      parameters:
+        - name: userName
+          in: path
+          required: true
+          description: The username for which to retrieve orders.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/order'
+        '400':
+          description: invalid user id supplied in authentication token
+        '401':
+          description: not authenticated
+
+components:
+  schemas:
+    customer:
+      type: object
+      description: customer object
+      properties:
+        user_name:
+          type: string
+          description: user name of the customer
+          example: "FakeJohnny"
+        is_professional:
+            type: boolean
+            description: status of the customer
+            example: true
+      required:
+        - user_name
+
+
+    order:
+      type: object
+      description: order object
+      properties:
+        order_id:
+          type: integer
+          format: int64
+          description: Unique identifier for the order.
+        article_count:
+          type: integer
+          format: int32
+          description: Number of articles in the order.
+        merchandise_value:
+          type: number
+          format: double
+          description: Total value of the merchandise in the order.
+        shipment_cost:
+          type: number
+          format: double
+          description: Cost of shipping for the order.
+        total_value:
+          type: number
+          format: double
+          description: Total value of the order, including merchandise and shipment costs.
+        commission:
+          type: number
+          format: double
+          description: Commission charged for the order.
+        currency:
+          type: string
+          description: Currency code for monetary values.
+          example: EUR
+        purchaseItems:
+          type: array
+          description: List of items associated with the purchase.
+          items:
+            $ref: '#/components/schemas/orderItem'
+      required:
+        - orderId
+        - articleCount
+        - merchandiseValue
+        - shipmentCost
+        - totalValue
+        - commission
+        - currency
+
+    orderItem:
+      type: object
+      description: Order item object
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: Unique identifier for the order item.
+        orderId:
+          type: integer
+          format: int64
+          description: Identifier of the associated purchase.
+        count:
+          type: integer
+          format: int32
+          description: Number of items in the order.
+        condition:
+          type: string
+          description: Condition of the item (e.g., new, used).
+        price:
+          type: number
+          format: double
+          description: Price of the individual item.
+        card:
+          $ref: '#/components/schemas/card'
+      required:
+        - purchaseId
+        - count
+        - condition
+        - price
+        - card
+
+    card:
+      type: object
+      description: Card object
+      properties:
+        id:
+          $ref: '#/components/schemas/cardId'
+        completeDescription:
+          type: string
+          description: Detailed description of the card.
+        productName:
+          type: string
+          description: Name of the product associated with the card.
+        name:
+          type: string
+          description: Name of the card.
+        language:
+          type: string
+          description: Language of the card.
+        rarity:
+          type: string
+          description: Rarity level of the card.
+        isFirstEdition:
+          type: boolean
+          description: Indicates if the card is a first edition.
+        productId:
+          type: integer
+          format: int64
+          description: Identifier of the associated product.
+      required:
+        - id
+        - completeDescription
+        - productName
+        - name
+        - language
+        - rarity
+        - isFirstEdition
+        - productId
+
+    cardId:
+      type: object
+      description: Composite key for the Card entity.
+      properties:
+        konamiSet:
+          type: string
+          description: Konami set identifier of the card.
+        number:
+          type: integer
+          format: int32
+          description: Unique card number within the Konami set.
+      required:
+        - konamiSet
+        - number
+
+
+

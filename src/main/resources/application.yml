@@ -1,0 +1,37 @@
+spring:
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        generate_statistics: false
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        ddl-auto: validate
+        format_sql: true
+  datasource:
+    url: 'jdbc:mysql://localhost:${DATABASE_PORT}/${DATABASE_NAME}?createDatabaseIfNotExist=true&characterEncoding=utf8&useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC'
+    username: '${DATABASE_USER}'
+    password: '${DATABASE_PASSWORD}'
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      idle-timeout: 15000
+      maximum-pool-size: 20
+      maxLifetime: 600000
+      minimumIdle: 2
+
+
+springdoc:
+  api-docs:
+    path: /api-docs
+    groups:
+      enabled: true
+  swagger-ui:
+    url: /openapi.yml
+    display-request-duration: true
+    groups-order: desc
+    default-models-expand-depth: -1
+    tags-sorter: alpha
+    operations-sorter: method
+
+server:
+  servlet:
+    context-path: '/invoice-management-system/api'

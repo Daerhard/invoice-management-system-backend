@@ -27,9 +27,4 @@ data class Customer(
 
     @Column(name = "vat_number", nullable = true)
     val vatNumber: String? = null,
-
-    @OneToMany
-    @JoinColumn(name = "customer_id")
-    val orders: List<Purchase> = emptyList(),
-
     )

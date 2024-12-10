@@ -7,3 +7,4 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface CardRepository: CrudRepository<Card, CardId>
+

@@ -1,1 +1,1 @@
-rootProject.name = "Invoice-Management-System"
+rootProject.name = "invoice.management.system"

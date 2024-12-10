@@ -1,4 +1,4 @@
-package invoice.management.system.services
+package invoice.management.system.services.csvImport
 
 import org.springframework.stereotype.Service
 
@@ -45,7 +45,7 @@ class ProductDescriptionService{
         return createDescriptionDetail(splitDescription)
     }
 
-    private fun convertDifferentCardVersionString(description: String): DescriptionDetail{
+    private fun convertDifferentCardVersionString(description: String): DescriptionDetail {
         val regex = Regex("""\s\([^)]+\)""")
         val modifiedDescription = description.replaceFirst(regex, "").trim()
 
@@ -76,7 +76,7 @@ class ProductDescriptionService{
         return splitDescription.take(5) + isFirstEdition.toString() + splitDescription.last()
     }
 
-    private fun createDescriptionDetail(splitDescription: List<String>): DescriptionDetail{
+    private fun createDescriptionDetail(splitDescription: List<String>): DescriptionDetail {
         val regex = Regex("""^\d+x\s""")
         val splitProductTitle = splitDescription[0].split(" (")
 

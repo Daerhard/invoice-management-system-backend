@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_container
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DATABASE_PASSWORD}
+      MYSQL_DATABASE: ${DATABASE_NAME}
+      MYSQL_USER: ${DATABASE_USER}
+      MYSQL_PASSWORD: ${DATABASE_PASSWORD}
+    ports:
+      - "${DATABASE_PORT}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./sql/init:/docker-entrypoint-initdb.d # Optional: Preload SQL scripts
+
+  flyway:
+    image: flyway/flyway:9.21.1
+    container_name: flyway_migration
+    depends_on:
+      - mysql
+    environment:
+      FLYWAY_URL: jdbc:mysql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}?useSSL=false&serverTimezone=UTC
+      FLYWAY_USER: ${DATABASE_USER}
+      FLYWAY_PASSWORD: ${DATABASE_PASSWORD}
+    volumes:
+      - ./sql/migrations:/flyway/sql # Flyway migration scripts
+
+  application:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: spring_boot_app
+    depends_on:
+      - mysql
+      - flyway
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}?useSSL=false&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: ${DATABASE_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DATABASE_PASSWORD}
+    ports:
+      - "8080:8080" # Maps Spring Boot app port
+    volumes:
+      - ./logs:/logs # Optional: Log files
+      - ./config:/config # Optional: External configuration
+
+volumes:
+  mysql_data:

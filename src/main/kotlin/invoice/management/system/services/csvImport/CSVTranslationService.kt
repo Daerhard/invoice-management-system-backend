@@ -1,4 +1,4 @@
-package invoice.management.system.services
+package invoice.management.system.services.csvImport
 
 import com.opencsv.CSVParserBuilder
 import com.opencsv.CSVReaderBuilder
@@ -15,7 +15,7 @@ class CSVTranslationService {
         private val DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
     }
 
-    fun translateOrders(filePath: String): List<Order> {
+    fun translateOrders(filePath: String): List<CSVOrder> {
         return CSVReaderBuilder(FileReader(filePath))
             .withCSVParser(CSV_PARSER)
             .build()
@@ -26,13 +26,13 @@ class CSVTranslationService {
             }
     }
 
-    private fun parseOrder(fields: Array<String>): Order {
+    private fun parseOrder(fields: Array<String>): CSVOrder {
         val completeDescription = fields[15]
         val splitDescription = splitField(completeDescription)
         val localizedProductNames = splitField(fields[17])
         val productIds = splitField(fields[16]).map(String::toLong)
 
-        return Order(
+        return CSVOrder(
             orderId = fields[0].toLong(),
             username = fields[1],
             name = fields[2],
@@ -71,7 +71,7 @@ class CSVTranslationService {
     }
 }
 
-data class Order(
+data class CSVOrder(
     val orderId: Long,
     val username: String,
     val name: String,
