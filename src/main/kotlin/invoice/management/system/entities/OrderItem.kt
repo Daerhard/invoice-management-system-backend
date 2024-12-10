@@ -17,8 +17,11 @@ data class OrderItem(
     @Column(name = "count")
     val count: Int,
 
-    @Column(name = "condition")
+    @Column(name = "`condition`")
     val condition: String,
+
+    @Column(name = "is_first_edition")
+    val isFirstEdition: Boolean,
 
     @Column(name = "price")
     val price: Double,

@@ -1,8 +1,7 @@
 package invoice.management.system.factories
 
 import invoice.management.system.entities.*
-import java.time.LocalDateTime
-import java.util.*
+import java.time.LocalDate
 
 class EntityFactory {
 
@@ -30,7 +29,7 @@ class EntityFactory {
             id: Int? = null,
             customer: Customer = createCustomer(),
             orderId: Long = 1,
-            dateOfPayment: LocalDateTime = LocalDateTime.now(),
+            dateOfPayment: LocalDate = LocalDate.now(),
             articleCount: Int = 1,
             merchandiseValue: Double = 1.0,
             shipmentCost: Double = 1.0,
@@ -58,6 +57,7 @@ class EntityFactory {
             count: Int = 1,
             condition: String = "new",
             price: Double = 1.0,
+            isFirstEdition: Boolean = true,
             card: Card = createCard()
         ) = OrderItem(
             id = id,
@@ -65,18 +65,17 @@ class EntityFactory {
             count = count,
             condition = condition,
             price = price,
+            isFirstEdition = isFirstEdition,
             card = card
         )
 
         fun createCard(
             cardId: CardId = CardId("25th Anniversary Tin: Dueling Mirrors", 147),
-            cardUuid: UUID = UUID.randomUUID(),
             completeDescription: String = "1x Trident Dragion (25th Anniversary Tin: Dueling Mirrors) - 147 - Secret Rare - NM - German - FirstEd - 12,80 EUR",
             productName: String = "Trident Dragion",
             name: String = "Dreiköpfiger Drache",
             language: String = "German",
             rarity: String = "Secret Rare",
-            isFirstEdition: Boolean = true,
             productId: Long = 788591
         ) = Card(
             cardId = cardId,
@@ -85,7 +84,6 @@ class EntityFactory {
             name = name,
             language = language,
             rarity = rarity,
-            isFirstEdition = isFirstEdition,
             productId = productId,
         )
     }

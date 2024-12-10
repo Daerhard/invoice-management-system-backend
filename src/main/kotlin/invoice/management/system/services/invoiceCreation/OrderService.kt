@@ -15,7 +15,6 @@ class OrderService(
     private val orderRepository: OrderRepository
 ) : OrdersApiDelegate {
 
-
     override fun getOrdersByUserName(userName: String): ResponseEntity<List<OrderDto>> {
         val purchases = orderRepository.findAll()
 
@@ -39,15 +38,14 @@ class OrderService(
                         card =
                         CardDto(
                             CardIdDto(
-                            konamiSet = item.card.cardId!!.konamiSet!!,
-                            number = item.card.cardId!!.number!!,
+                            konamiSet = item.card.cardId.konamiSet,
+                            number = item.card.cardId.number,
                             ),
                             completeDescription = item.card.completeDescription,
                             productName = item.card.productName,
                             name = item.card.name,
                             language = item.card.language,
                             rarity = item.card.rarity,
-                            isFirstEdition = item.card.isFirstEdition,
                             productId = item.card.productId
                         )
                     )

@@ -32,15 +32,40 @@ paths:
   /v1/import:
     post:
       tags:
-        - csv-import
-      summary: import csv data
-      description: import csv data
+        - CSVImport
+      summary: Upload a CSV file for database import
+      description: Accepts a CSV file and imports its data into the database.
       operationId: importCSVData
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: The CSV file to be uploaded.
       responses:
         '201':
-          description: customers successfully imported
+          description: CSV file imported successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responseMessage'
         '400':
-          description: validation exception
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responseMessage'
+        '500':
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responseMessage'
 
   /v1/orders/{userName}:
     get:
@@ -160,7 +185,7 @@ components:
         card:
           $ref: '#/components/schemas/card'
       required:
-        - purchaseId
+        - orderId
         - count
         - condition
         - price
@@ -187,21 +212,16 @@ components:
         rarity:
           type: string
           description: Rarity level of the card.
-        isFirstEdition:
-          type: boolean
-          description: Indicates if the card is a first edition.
         productId:
           type: integer
           format: int64
           description: Identifier of the associated product.
       required:
         - id
-        - completeDescription
         - productName
         - name
         - language
         - rarity
-        - isFirstEdition
         - productId
 
     cardId:
@@ -218,6 +238,12 @@ components:
       required:
         - konamiSet
         - number
+
+    responseMessage:
+      type: object
+      properties:
+        message:
+          type: string
 
 
 

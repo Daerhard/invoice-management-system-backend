@@ -51,5 +51,6 @@ class CardmarketOrderRepositoryTest : RepositoryTest() {
         assertEquals(orderItem.count, fetchedOrderItem?.count)
         assertEquals(orderItem.condition, fetchedOrderItem?.condition)
         assertEquals(orderItem.price, fetchedOrderItem?.price)
+        assertEquals(orderItem.isFirstEdition, fetchedOrderItem?.isFirstEdition)
     }
 }

@@ -2,7 +2,7 @@ package invoice.management.system.services.csvImport
 
 import org.springframework.stereotype.Service
 
-//"3x Purrelyly - Traskl (Cyberstorm Access) - 018 - Common - NM - German - FirstEd - 0,10 EUR"
+//"3x Purrelyly - Test (Cyberstorm Access) - 018 - Common - NM - German - FirstEd - 0,10 EUR"
 val standardRegex = Regex(
     """^\d+x\s[^()]+?\s\([^()]+\)\s-\s\d+\s-\s[^()]+?\s-\s[^()]+?\s-\s[^()]+?\s-\s\d+,\d+\s[A-Z]{3}$"""
 )
@@ -90,7 +90,7 @@ class ProductDescriptionService{
             rarity = splitDescription[2],
             condition = splitDescription[3],
             language = splitDescription[4],
-            isFirstEdition = splitDescription[5].contains("First"),
+            isFirstEdition = splitDescription[5].toBoolean(),
             price = extractAndConvertPrice(splitDescription[6])
         )
 

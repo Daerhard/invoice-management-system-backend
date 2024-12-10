@@ -6,7 +6,7 @@ import invoice.management.system.repositories.OrderRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager
 
-open class RepositoryTest {
+open class RepositoryTest: MySQLTestContainer {
 
     @Autowired
     lateinit var customerRepository: CustomerRepository

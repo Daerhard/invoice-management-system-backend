@@ -25,9 +25,6 @@ data class Card(
     @Column(name = "rarity")
     val rarity: String,
 
-    @Column(name = "is_first_edition")
-    val isFirstEdition: Boolean,
-
     @Column(name = "product_id")
     val productId: Long,
     ) {

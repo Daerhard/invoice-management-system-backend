@@ -25,7 +25,6 @@ class CardRepositoryTest : RepositoryTest() {
         assertEquals(expectedCard.name, fetchedCard?.name)
         assertEquals(expectedCard.language, fetchedCard?.language)
         assertEquals(expectedCard.rarity, fetchedCard?.rarity)
-        assertEquals(expectedCard.isFirstEdition, fetchedCard?.isFirstEdition)
         assertEquals(expectedCard.productId, fetchedCard?.productId)
     }
 }

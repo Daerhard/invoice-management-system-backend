@@ -3,15 +3,16 @@ package invoice.management.system.services.csvImport
 import invoice.management.system.entities.*
 import invoice.management.system.repositories.CardRepository
 import invoice.management.system.repositories.CustomerRepository
+import invoice.management.system.repositories.OrderRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.*
 
 @Service
 class CSVEntityConverter(
     private val customerRepository: CustomerRepository,
-    private val cardRepository: CardRepository
+    private val cardRepository: CardRepository,
+    private val cardMarketOrderRepository: OrderRepository
 ) {
 
     @Transactional
@@ -23,12 +24,11 @@ class CSVEntityConverter(
                 null -> createNewCustomer(csvOrder)
                 else -> updateExistingCustomer(existingCustomer, csvOrder)
             }
-
-            val order = createOrder(csvOrder, customer)
-            val orderItems = createOrderItems(order, csvOrder)
-            order.orderItems.addAll(orderItems)
+            cardMarketOrderRepository.findByExternalOrderId(csvOrder.externalOrderId) ?: createNewCardmarketOrder(
+                csvOrder,
+                customer
+            )
         }
-
     }
 
     private fun createNewCustomer(csvOrder: CSVOrder): Customer {
@@ -54,14 +54,14 @@ class CSVEntityConverter(
         }
     }
 
-    private fun createOrder(
+    private fun createNewCardmarketOrder(
         csvOrder: CSVOrder,
         customer: Customer,
-    ): CardmarketOrder {
-        return CardmarketOrder(
+    ) {
+        val cardMarketOrder = CardmarketOrder(
             customer = customer,
-            externalOrderId = csvOrder.orderId,
-            dateOfPayment = csvOrder.dateOfPayment,
+            externalOrderId = csvOrder.externalOrderId,
+            dateOfPayment = csvOrder.dateOfPayment.toLocalDate(),
             articleCount = csvOrder.articleCount,
             merchandiseValue = csvOrder.merchandiseValue,
             shipmentCost = csvOrder.shipmentCosts,
@@ -69,6 +69,10 @@ class CSVEntityConverter(
             commission = csvOrder.commission,
             currency = csvOrder.currency,
         )
+
+        val orderItems = createOrderItems(cardMarketOrder, csvOrder)
+        cardMarketOrder.orderItems.addAll(orderItems)
+        cardMarketOrderRepository.save(cardMarketOrder)
     }
 
 
@@ -84,6 +88,7 @@ class CSVEntityConverter(
                 count = csvOrder.articleCount,
                 condition = descriptionDetail.condition,
                 price = descriptionDetail.price,
+                isFirstEdition = descriptionDetail.isFirstEdition,
                 card = cardRepository.findByIdOrNull(
                     CardId(
                         descriptionDetail.konamiSet,
@@ -108,7 +113,6 @@ class CSVEntityConverter(
                 name = orderProduct.localizedName,
                 language = descriptionDetail.language,
                 rarity = descriptionDetail.rarity,
-                isFirstEdition = descriptionDetail.isFirstEdition,
                 productId = orderProduct.productId
             )
         )

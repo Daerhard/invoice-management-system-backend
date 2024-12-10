@@ -2,8 +2,11 @@ package invoice.management.system.services.csvImport
 
 import com.opencsv.CSVParserBuilder
 import com.opencsv.CSVReaderBuilder
+import org.springframework.core.io.Resource
 import org.springframework.stereotype.Service
 import java.io.FileReader
+import java.io.InputStreamReader
+import java.io.Reader
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -15,12 +18,18 @@ class CSVTranslationService {
         private val DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
     }
 
-    fun translateOrders(filePath: String): List<CSVOrder> {
-        return CSVReaderBuilder(FileReader(filePath))
+    fun translateOrders(file: Resource): List<CSVOrder> {
+        return file.inputStream.use { inputStream ->
+            translateCSV(InputStreamReader(inputStream))
+        }
+    }
+
+    private fun translateCSV(reader: Reader): List<CSVOrder> {
+        return CSVReaderBuilder(reader)
             .withCSVParser(CSV_PARSER)
             .build()
-            .use { reader ->
-                reader.readAll()
+            .use { csvReader ->
+                csvReader.readAll()
                     .drop(1) // Skip header row
                     .map { fields -> parseOrder(fields) }
             }
@@ -33,7 +42,7 @@ class CSVTranslationService {
         val productIds = splitField(fields[16]).map(String::toLong)
 
         return CSVOrder(
-            orderId = fields[0].toLong(),
+            externalOrderId = fields[0].toLong(),
             username = fields[1],
             name = fields[2],
             street = fields[3],
@@ -43,10 +52,10 @@ class CSVTranslationService {
             vatNumber = fields[7].takeIf { it.isNotEmpty() },
             dateOfPayment = LocalDateTime.parse(fields[8], DATE_FORMATTER),
             articleCount = fields[9].toInt(),
-            merchandiseValue = fields[10].toDoubleOrNull() ?: 0.0,
-            shipmentCosts = fields[11].toDoubleOrNull() ?: 0.0,
-            totalValue = fields[12].toDoubleOrNull() ?: 0.0,
-            commission = fields[13].toDoubleOrNull() ?: 0.0,
+            merchandiseValue = fields[10].replace(",", ".").toDoubleOrNull() ?: throw IllegalArgumentException("Invalid merchandise value"),
+            shipmentCosts = fields[11].replace(",", ".").toDoubleOrNull() ?: throw IllegalArgumentException("Invalid shipment costs"),
+            totalValue = fields[12].replace(",", ".").toDoubleOrNull() ?: throw IllegalArgumentException("Invalid total value"),
+            commission = fields[13].replace(",", ".").toDoubleOrNull() ?: throw IllegalArgumentException("Invalid commission"),
             currency = fields[14],
             completeDescription = completeDescription,
             splitDescription = splitDescription,
@@ -72,7 +81,7 @@ class CSVTranslationService {
 }
 
 data class CSVOrder(
-    val orderId: Long,
+    val externalOrderId: Long,
     val username: String,
     val name: String,
     val street: String,

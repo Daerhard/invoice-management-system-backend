@@ -1,7 +1,7 @@
 package invoice.management.system.entities
 
 import jakarta.persistence.*
-import java.time.LocalDateTime
+import java.time.LocalDate
 
 @Entity
 @Table(name = "cardmarket_order")
@@ -13,14 +13,14 @@ data class CardmarketOrder(
     val id: Int? = null,
 
     @ManyToOne
-    @JoinColumn(name = "customer_id", nullable = false)
+    @JoinColumn(name = "customer_user_name", nullable = false)
     val customer: Customer,
 
     @Column(name = "external_order_id")
     val externalOrderId: Long,
 
     @Column(name = "date_of_payment")
-    val dateOfPayment: LocalDateTime,
+    val dateOfPayment: LocalDate,
 
     @Column(name = "article_count")
     val articleCount: Int,
