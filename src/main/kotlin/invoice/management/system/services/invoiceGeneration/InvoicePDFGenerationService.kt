@@ -95,19 +95,51 @@ class InvoicePDFGenerationService {
             createArticleRow(orderTable, orderItem)
         }
 
+        cardmarketOrder.orderItems.map { orderItem ->
+            createArticleRow(orderTable, orderItem)
+        }
+
+        cardmarketOrder.orderItems.map { orderItem ->
+            createArticleRow(orderTable, orderItem)
+        }
+
+        cardmarketOrder.orderItems.map { orderItem ->
+            createArticleRow(orderTable, orderItem)
+        }
+
+        cardmarketOrder.orderItems.map { orderItem ->
+            createArticleRow(orderTable, orderItem)
+        }
+
+        cardmarketOrder.orderItems.map { orderItem ->
+            createArticleRow(orderTable, orderItem)
+        }
+
+        cardmarketOrder.orderItems.map { orderItem ->
+            createArticleRow(orderTable, orderItem)
+        }
+
+        cardmarketOrder.orderItems.map { orderItem ->
+            createArticleRow(orderTable, orderItem)
+        }
+
+        cardmarketOrder.orderItems.map { orderItem ->
+            createArticleRow(orderTable, orderItem)
+        }
+
         createEmptyBorderRow(orderTable, true)
 
         orderTable.addCell(createCell("Versandkosten").setBorderRight(SolidBorder(0.5f)))
         orderTable.addCell(createCell(""))
         orderTable.addCell(createCell("").setBorderRight(SolidBorder(0.5f)))
-        orderTable.addCell(createCell("$shipmentCost €"))
+        orderTable.addCell(createCell(String.format("%.2f", shipmentCost) + " €"))
 
         createEmptyBorderRow(orderTable, false)
 
         orderTable.addCell(createCell("Gesamtbetrag").setBorderRight(SolidBorder(0.5f)))
         orderTable.addCell(createCell(""))
         orderTable.addCell(createCell("").setBorderRight(SolidBorder(0.5f)))
-        orderTable.addCell(createCell("$totalValue €"))
+        orderTable.addCell(createCell(String.format("%.2f", totalValue) + " €"))
 
         document.add(orderTable)
     }
@@ -115,13 +147,12 @@ class InvoicePDFGenerationService {
     private fun createArticleRow(orderTable: Table, orderItem: OrderItem) {
         val count = orderItem.count.toString()
         val card = orderItem.card
-//        val description = "${card.productName} - (${card.cardId.konamiSet}) - ${card.cardId.number} - ${orderItem.card.rarity}"
-       val description = "hdashbgdjnfdkaaksienghgzhrhfkdjngfhjfdbghbahbfhbdagfvgevgfvfgdbfjhdanjbHBDGFVADGBFJVBAHGVDGFVJHASNJGBAHF"
-        val singlePrice = orderItem.price.toString()
-        val totalPrice =  (orderItem.price * orderItem.count).toString()
+        val description = "${card.productName} - (${card.cardId.konamiSet}) - ${card.cardId.number} - ${orderItem.card.rarity}"
+        val singlePrice = String.format("%.2f", orderItem.price)
+        val totalPrice =  String.format("%.2f", (orderItem.price * orderItem.count))
 
         orderTable.addCell(createCell("$count x").setBorderRight(SolidBorder(0.5f)))
-        orderTable.addCell(createCell(description).setBorderRight(SolidBorder(0.5f)).setWidth(UnitValue.createPercentValue(60f)))
+        orderTable.addCell(createCell(description).setBorderRight(SolidBorder(0.5f)).setMaxWidth(40f))
         orderTable.addCell(createCell("$singlePrice €").setBorderRight(SolidBorder(0.5f)))
         orderTable.addCell(createCell("$totalPrice €"))
     }
