@@ -3,7 +3,7 @@ package invoice.management.system.services.csvImport
 import invoice.management.system.entities.*
 import invoice.management.system.repositories.CardRepository
 import invoice.management.system.repositories.CustomerRepository
-import invoice.management.system.repositories.OrderRepository
+import invoice.management.system.repositories.CardmarketOrderRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -12,14 +12,12 @@ import org.springframework.transaction.annotation.Transactional
 class CSVEntityConverter(
     private val customerRepository: CustomerRepository,
     private val cardRepository: CardRepository,
-    private val cardMarketOrderRepository: OrderRepository
+    private val cardMarketOrderRepository: CardmarketOrderRepository
 ) {
 
     @Transactional
     fun convertCSVOrders(csvOrder: List<CSVOrder>) {
-
         csvOrder.forEach { csvOrder ->
-
             val customer = when (val existingCustomer = customerRepository.findByUserName(csvOrder.username)) {
                 null -> createNewCustomer(csvOrder)
                 else -> updateExistingCustomer(existingCustomer, csvOrder)
@@ -75,7 +73,6 @@ class CSVEntityConverter(
         cardMarketOrderRepository.save(cardMarketOrder)
     }
 
-
     private fun createOrderItems(
         cardmarketOrder: CardmarketOrder,
         csvOrder: CSVOrder
@@ -85,7 +82,7 @@ class CSVEntityConverter(
 
             OrderItem(
                 cardmarketOrder = cardmarketOrder,
-                count = csvOrder.articleCount,
+                count = orderProduct.descriptionDetail.articleCount,
                 condition = descriptionDetail.condition,
                 price = descriptionDetail.price,
                 isFirstEdition = descriptionDetail.isFirstEdition,

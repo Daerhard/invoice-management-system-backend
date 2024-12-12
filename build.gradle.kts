@@ -47,6 +47,8 @@ dependencies {
 	implementation("com.opencsv:opencsv:5.8")
 	implementation("com.h2database:h2:2.2.220")
 
+	implementation ("com.itextpdf:itext7-core:7.1.19")
+
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 	runtimeOnly("com.mysql:mysql-connector-j")
 
@@ -56,7 +58,6 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.junit.jupiter:junit-jupiter:$jUnitJupiterVersion")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-	testImplementation("org.testcontainers:junit-jupiter:${testcontainersVersion}")
 	testImplementation("org.testcontainers:mysql:${testcontainersVersion}")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }

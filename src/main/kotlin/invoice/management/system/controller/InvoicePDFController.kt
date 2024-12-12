@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 
 @Controller
 @RequestMapping("\${openapi.invoice-management-system.base-path:}")
-class InvoiceGenerationPDF(
+class InvoicePDFController(
     @Autowired private val delegate: InvoiceGenerationPDFApiDelegate
 ) : InvoiceGenerationPDFApi {
     override fun getDelegate(): InvoiceGenerationPDFApiDelegate = delegate

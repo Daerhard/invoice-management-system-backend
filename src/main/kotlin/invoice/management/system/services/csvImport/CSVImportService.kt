@@ -24,7 +24,7 @@ class CSVImportService(
         if (validationErrors.isNotEmpty()) {
             return ResponseEntity(
                 ResponseMessageDto(
-                    "CSV schema validation failed:\n" + validationErrors.joinToString("\n")
+                    "CSV schema validation failed:$validationErrors"
                 ),
                 HttpStatus.BAD_REQUEST
             )
@@ -35,7 +35,9 @@ class CSVImportService(
             csvEntityConverter.convertCSVOrders(csvOrders)
             ResponseEntity(ResponseMessageDto("CSV file import was successful"), HttpStatus.CREATED)
         } catch (ex: Exception) {
-            ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR)
+            ResponseEntity(ResponseMessageDto(
+                "Internal Server Error."
+            ),HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
 }

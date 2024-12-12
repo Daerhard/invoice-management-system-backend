@@ -80,7 +80,11 @@ class ProductDescriptionService{
         val regex = Regex("""^\d+x\s""")
         val splitProductTitle = splitDescription[0].split(" (")
 
+        val articleCount = regex.find(splitProductTitle[0])
+            ?.value?.trim()?.replace("x", "")?.toInt() ?: 1
+
         val descriptionDetail = DescriptionDetail(
+            articleCount = articleCount,
             productName = splitProductTitle[0].replace(regex, ""),
             konamiSet = splitProductTitle[1].trimEnd(')'),
             productNumber = splitDescription[1]
@@ -105,6 +109,7 @@ class ProductDescriptionService{
 }
 
 data class DescriptionDetail(
+    val articleCount: Int,
     val productName: String,
     val konamiSet: String,
     val productNumber: Int,

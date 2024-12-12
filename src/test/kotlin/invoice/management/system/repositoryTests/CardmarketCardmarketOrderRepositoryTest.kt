@@ -13,7 +13,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-class CardmarketOrderRepositoryTest : RepositoryTest() {
+class CardmarketCardmarketOrderRepositoryTest : RepositoryTest() {
 
     @Test
     fun whenFindByUserName_thenReturnEntity() {
@@ -34,7 +34,7 @@ class CardmarketOrderRepositoryTest : RepositoryTest() {
         expectedOrder.orderItems.add(orderItem)
         entityManager.flushAndClear()
 
-        val fetchedOrder = orderRepository.findByExternalOrderId(expectedOrder.externalOrderId)
+        val fetchedOrder = cardmarketOrderRepository.findByExternalOrderId(expectedOrder.externalOrderId)
         assertEquals(expectedOrder.externalOrderId, fetchedOrder?.externalOrderId)
         assertEquals(expectedOrder.customer, fetchedOrder?.customer)
         assertEquals(expectedOrder.dateOfPayment, fetchedOrder?.dateOfPayment)

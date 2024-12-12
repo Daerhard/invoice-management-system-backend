@@ -67,6 +67,41 @@ paths:
               schema:
                 $ref: '#/components/schemas/responseMessage'
 
+  /v1/generatePDFInvoiceForOrder/{cardmarketExternalOrderId}:
+    get:
+      tags:
+        - InvoiceGenerationPDF
+      summary: Generate and save an invoice in pdf format
+      description: Generate an invoice in pdf format and returns it for saving on the client's machine.
+      operationId: getInvoiceForOrderAsPDF
+      parameters:
+        - name: cardmarketExternalOrderId
+          in: path
+          required: true
+          description: The external order id.
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: PDF file generated successfully.
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '500':
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error occurred while generating the PDF.
+
+
   /v1/orders/{userName}:
     get:
       tags:
@@ -244,6 +279,7 @@ components:
       properties:
         message:
           type: string
+          example: CSV schema validation failed. / CSV file import was successful. / Internal Server Error.
 
 
 

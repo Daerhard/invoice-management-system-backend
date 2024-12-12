@@ -1,74 +1,201 @@
-package invoice.management.system.services.invoiceCreation
+package invoice.management.system.services.invoiceGeneration
 
+import com.itextpdf.kernel.colors.Color
+import com.itextpdf.kernel.colors.ColorConstants
 import com.itextpdf.kernel.pdf.PdfDocument
 import com.itextpdf.kernel.pdf.PdfWriter
 import com.itextpdf.layout.Document
-import com.itextpdf.layout.element.Paragraph
-import com.itextpdf.layout.element.Text
+import com.itextpdf.layout.element.*
+import com.itextpdf.layout.property.TextAlignment
+import com.itextpdf.layout.property.UnitValue
+import com.itextpdf.layout.borders.Border
+import com.itextpdf.layout.borders.SolidBorder
+import invoice.management.system.entities.CardmarketOrder
+import invoice.management.system.entities.OrderItem
 import org.springframework.stereotype.Service
 import java.io.ByteArrayOutputStream
-import java.util.Date
 
 @Service
-class InvoicePdfService {
+class InvoicePDFGenerationService {
 
-    fun generateInvoicePdf(): ByteArray {
+    private val smallFontSize = 8f
+
+    fun generateInvoicePdf(cardmarketOrder: CardmarketOrder): ByteArray {
         val baos = ByteArrayOutputStream()
         val writer = PdfWriter(baos)
         val pdfDoc = PdfDocument(writer)
         val document = Document(pdfDoc)
 
-        // (Sender)
-        document.add(Paragraph().add(Text("Thomas-Morus-Str. 2\n")))
-        document.add(Paragraph().add(Text("86916 Kaufering\n")))
-        document.add(Paragraph().add(Text("Deutschland\n")))
-        document.add(Paragraph().add(Text("Tel: 016097506045\n")))
-        document.add(Paragraph().add(Text("E-Mail: erhard-daniel-gew@gmx.de\n")))
-        document.add(Paragraph().add(Text("Ustd.ID-Nr.: DE360327004\n")))
+        createInvoiceHeader(document, cardmarketOrder)
+        document.add(Paragraph("\n"))
 
-        document.add(Paragraph())
+        createCustomerDetails(document, cardmarketOrder)
+        document.add(Paragraph("\n"))
 
-        // Add invoice date and order info
-        document.add(Paragraph().add(Text("Rechnungsdatum: ${Date()}")))
-        document.add(Paragraph().add(Text("Leistungsdatum: ${Date()}")))
-        document.add(Paragraph().add(Text("Bestellnummer: 1099030352")))
-        document.add(Paragraph().add(Text("Rechnungsnummer: 1099030352")))
+        document.add(createParagraph("Sehr geehrter Kunde,", smallFontSize))
+        document.add(createParagraph("vielen Dank für Ihre Bestellung!", smallFontSize))
+        document.add(createParagraph("Diese beinhaltet die nachfolgend aufgeführten Positionen:", smallFontSize))
+        document.add(Paragraph("\n"))
 
-        document.add(Paragraph())
+        createOrderTable(document, cardmarketOrder)
+        document.add(Paragraph("\n"))
 
-        // Add customer info (Receiver)
-        document.add(Paragraph().add(Text("Levent Adem")))
-        document.add(Paragraph().add(Text("Bruchstraße 64a")))
-        document.add(Paragraph().add(Text("40235 Düsseldorf")))
+        document.add(createParagraph("Der ausgewiesene Betrag ist unmittelbar und ohne jeglichen Abzug zu entrichten.", smallFontSize))
+        document.add(createParagraph("Zu beachten: Gemäß § 19 UStG wird keine Umsatzsteuer berechnet.", smallFontSize))
+        document.add(Paragraph("\n"))
 
-        document.add(Paragraph())
+        document.add(createParagraph("Freundliche Grüße", smallFontSize))
+        document.add(createParagraph("Daniel Erhard", smallFontSize))
 
-        // Add greeting and order details
-        document.add(Paragraph().add(Text("Sehr geehrter Kunde,\n\n")))
-        document.add(Paragraph().add(Text("vielen Dank für Ihre Bestellung!")))
-        document.add(Paragraph().add(Text("Diese beinhaltet die nachfolgend aufgeführten Positionen:\n\n")))
+        addFooterToDocument(document)
 
-        // Order items
-        document.add(Paragraph().add(Text("Artikel")))
-        document.add(Paragraph().add(Text("3x Thunder Dragonhawk (2019 Gold Sarcophagus Tin Mega Pack) 168 Secret Rare - 1,70 €")))
-        document.add(Paragraph().add(Text("Versandkosten 1,15 €")))
-        document.add(Paragraph().add(Text("Gesamtbetrag 6,25 €")))
-
-        document.add(Paragraph())
-
-        // Add payment terms
-        document.add(Paragraph().add(Text("Der ausgewiesene Betrag ist unmittelbar und ohne jeglichen Abzug zu entrichten.")))
-        document.add(Paragraph().add(Text("Zu beachten: Gemäß § 19 UStG wird keine Umsatzsteuer berechnet.")))
-
-        document.add(Paragraph())
-
-        // Closing remark
-        document.add(Paragraph().add(Text("Freundliche Grüße\n")))
-        document.add(Paragraph().add(Text("Daniel Erhard")))
-
-        // Close the document
         document.close()
 
         return baos.toByteArray()
+    }
+
+    private fun createInvoiceHeader(document: Document, cardmarketOrder: CardmarketOrder) {
+        val headerTable = Table(UnitValue.createPercentArray(floatArrayOf(50f))).useAllAvailableWidth()
+
+        val invoiceDate = cardmarketOrder.dateOfPayment
+        val paymentDate = cardmarketOrder.dateOfPayment
+        val orderNumber = cardmarketOrder.externalOrderId
+        val invoiceNumber = cardmarketOrder.externalOrderId
+
+        headerTable
+            .addCell(createCell("Rechnungsdatum: $invoiceDate", textAlignment = TextAlignment.RIGHT))
+            .addCell(createCell("Leistungsdatum: $paymentDate",textAlignment = TextAlignment.RIGHT))
+            .addCell(createCell("Bestellnummer: $orderNumber", textAlignment = TextAlignment.RIGHT))
+            .addCell(createCell("Rechnungsnummer: $invoiceNumber", textAlignment = TextAlignment.RIGHT))
+
+        document.add(headerTable)
+    }
+
+    private fun createCustomerDetails(document: Document, cardmarketOrder: CardmarketOrder){
+        val fullName = cardmarketOrder.customer.fullName
+        val street = cardmarketOrder.customer.street
+        val city = cardmarketOrder.customer.city
+
+        document.add(createParagraph(fullName, smallFontSize))
+        document.add(createParagraph(street, smallFontSize))
+        document.add(createParagraph(city, smallFontSize))
+    }
+
+    private fun createOrderTable(document: Document, cardmarketOrder: CardmarketOrder) {
+        val shipmentCost = cardmarketOrder.shipmentCost
+        val totalValue = cardmarketOrder.totalValue
+
+        val orderTable = Table(UnitValue.createPercentArray(floatArrayOf(10f, 60f, 15f, 15f))).useAllAvailableWidth()
+        orderTable.addHeaderCell(createCell(" Anzahl",bold = true, backgroundColor = ColorConstants.LIGHT_GRAY).setBorderRight(SolidBorder(0.5f)).setBorderBottom(SolidBorder(1f)))
+        orderTable.addHeaderCell(createCell(" Artikelbeschreibung", bold = true, backgroundColor = ColorConstants.LIGHT_GRAY).setBorderRight(SolidBorder(0.5f)).setBorderBottom(SolidBorder(1f)))
+        orderTable.addHeaderCell(createCell(" Einzelpreis", bold = true, backgroundColor = ColorConstants.LIGHT_GRAY).setBorderRight(SolidBorder(0.5f)).setBorderBottom(SolidBorder(1f)))
+        orderTable.addHeaderCell(createCell(" Gesamtpreis", bold = true, backgroundColor = ColorConstants.LIGHT_GRAY).setBorderBottom(SolidBorder(1f)))
+
+        cardmarketOrder.orderItems.map { orderItem ->
+            createArticleRow(orderTable, orderItem)
+        }
+
+        createEmptyBorderRow(orderTable, true)
+
+        orderTable.addCell(createCell("Versandkosten").setBorderRight(SolidBorder(0.5f)))
+        orderTable.addCell(createCell(""))
+        orderTable.addCell(createCell("").setBorderRight(SolidBorder(0.5f)))
+        orderTable.addCell(createCell("$shipmentCost €"))
+
+        createEmptyBorderRow(orderTable, false)
+
+        orderTable.addCell(createCell("Gesamtbetrag").setBorderRight(SolidBorder(0.5f)))
+        orderTable.addCell(createCell(""))
+        orderTable.addCell(createCell("").setBorderRight(SolidBorder(0.5f)))
+        orderTable.addCell(createCell("$totalValue €"))
+
+        document.add(orderTable)
+    }
+
+    private fun createArticleRow(orderTable: Table, orderItem: OrderItem) {
+        val count = orderItem.count.toString()
+        val card = orderItem.card
+//        val description = "${card.productName} - (${card.cardId.konamiSet}) - ${card.cardId.number} - ${orderItem.card.rarity}"
+       val description = "hdashbgdjnfdkaaksienghgzhrhfkdjngfhjfdbghbahbfhbdagfvgevgfvfgdbfjhdanjbHBDGFVADGBFJVBAHGVDGFVJHASNJGBAHF"
+        val singlePrice = orderItem.price.toString()
+        val totalPrice =  (orderItem.price * orderItem.count).toString()
+
+        orderTable.addCell(createCell("$count x").setBorderRight(SolidBorder(0.5f)))
+        orderTable.addCell(createCell(description).setBorderRight(SolidBorder(0.5f)).setWidth(UnitValue.createPercentValue(60f)))
+        orderTable.addCell(createCell("$singlePrice €").setBorderRight(SolidBorder(0.5f)))
+        orderTable.addCell(createCell("$totalPrice €"))
+    }
+
+    private fun createEmptyBorderRow(orderTable: Table, isArticleRowEnd: Boolean){
+        orderTable.addCell(createCell("").setBorderRight(SolidBorder(0.5f)).setBorderBottom(SolidBorder(0.5f)))
+
+        if (isArticleRowEnd) {
+            orderTable.addCell(createCell("").setBorderBottom(SolidBorder(0.5f)).setBorderRight(SolidBorder(0.5f)))
+        } else {
+            orderTable.addCell(createCell("").setBorderBottom(SolidBorder(0.5f)))
+        }
+
+        orderTable.addCell(createCell("").setBorderRight(SolidBorder(0.5f)).setBorderBottom(SolidBorder(0.5f)))
+        orderTable.addCell(createCell("").setBorderBottom(SolidBorder(0.5f)))
+    }
+
+    private fun addFooterToDocument(document: Document) {
+        val pdfDoc = document.pdfDocument
+        val lastPage = pdfDoc.lastPage
+        val pageSize = lastPage.pageSize
+
+        val footerYPosition = pageSize.bottom + 20
+
+        val footerTable = createInvoiceFooterTable()
+
+        footerTable.setFixedPosition(
+            pdfDoc.numberOfPages,
+            pageSize.left + 36,
+            footerYPosition,
+            pageSize.width - 72
+        )
+
+        document.add(footerTable)
+    }
+
+    private fun createInvoiceFooterTable(): Table {
+        val footerTable = Table(UnitValue.createPercentArray(floatArrayOf(50f, 50f))).useAllAvailableWidth()
+
+        footerTable
+            .addCell(createCell("Thomas-Morus-Str. 2"))
+            .addCell(createCell("Kontaktinformation", textAlignment = TextAlignment.RIGHT))
+            .addCell(createCell("86916 Kaufering"))
+            .addCell(createCell("Daniel Erhard", textAlignment = TextAlignment.RIGHT))
+            .addCell(createCell("Deutschland"))
+            .addCell(createCell("Tel: 016097506045", textAlignment = TextAlignment.RIGHT))
+            .addCell(createCell("Ustd.ID-Nr.: DE360327004"))
+            .addCell(createCell("E-Mail: erhard-daniel-gew@gmx.de", textAlignment = TextAlignment.RIGHT))
+
+        return footerTable
+    }
+
+    private fun createCell(
+        content: String,
+        textAlignment: TextAlignment = TextAlignment.LEFT,
+        fontSize: Float = smallFontSize,
+        border: Border = Border.NO_BORDER,
+        backgroundColor: Color = ColorConstants.WHITE,
+        bold: Boolean = false
+    ): Cell {
+        val cell = Cell().add(Paragraph(content)
+            .setFontSize(fontSize))
+            .setBackgroundColor(backgroundColor)
+            .setTextAlignment(textAlignment)
+            .setBorder(border)
+
+        return if (bold) cell.setBold() else cell
+    }
+
+    private fun createParagraph(content: String, fontSize: Float, bold: Boolean = false): Paragraph {
+        val paragraph = Paragraph(content).setFontSize(fontSize)
+        if (bold) {
+            paragraph.setBold()
+        }
+        return paragraph
     }
 }

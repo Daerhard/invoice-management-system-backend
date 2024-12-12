@@ -1,22 +1,22 @@
-package invoice.management.system.services.invoiceCreation
+package invoice.management.system.services.invoiceGeneration
 
 import invoice.management.system.api.OrdersApiDelegate
 import invoice.management.system.model.CardDto
 import invoice.management.system.model.CardIdDto
 import invoice.management.system.model.OrderDto
 import invoice.management.system.model.OrderItemDto
-import invoice.management.system.repositories.OrderRepository
+import invoice.management.system.repositories.CardmarketOrderRepository
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 
 @Service
 class OrderService(
-    private val orderRepository: OrderRepository
+    private val cardmarketOrderRepository: CardmarketOrderRepository
 ) : OrdersApiDelegate {
 
     override fun getOrdersByUserName(userName: String): ResponseEntity<List<OrderDto>> {
-        val purchases = orderRepository.findAll()
+        val purchases = cardmarketOrderRepository.findAll()
 
         val purchaseDtos = purchases.filter {
             it.customer.userName == userName

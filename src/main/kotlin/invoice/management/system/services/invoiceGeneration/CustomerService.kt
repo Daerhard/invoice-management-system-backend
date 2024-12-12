@@ -1,4 +1,4 @@
-package invoice.management.system.services.invoiceCreation
+package invoice.management.system.services.invoiceGeneration
 
 import invoice.management.system.api.CustomersApiDelegate
 import invoice.management.system.model.CustomerDto
