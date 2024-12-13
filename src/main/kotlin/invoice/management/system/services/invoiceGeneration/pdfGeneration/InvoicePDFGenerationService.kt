@@ -1,7 +1,8 @@
-package invoice.management.system.services.invoiceGeneration
+package invoice.management.system.services.invoiceGeneration.pdfGeneration
 
 import com.itextpdf.kernel.colors.Color
 import com.itextpdf.kernel.colors.ColorConstants
+import com.itextpdf.kernel.events.PdfDocumentEvent
 import com.itextpdf.kernel.pdf.PdfDocument
 import com.itextpdf.kernel.pdf.PdfWriter
 import com.itextpdf.layout.Document
@@ -25,6 +26,8 @@ class InvoicePDFGenerationService {
         val writer = PdfWriter(baos)
         val pdfDoc = PdfDocument(writer)
         val document = Document(pdfDoc)
+        document.setMargins(36F, 36F, 120F, 36F)
+        pdfDoc.addEventHandler(PdfDocumentEvent.END_PAGE, FooterEventHandler())
 
         createInvoiceHeader(document, cardmarketOrder)
         document.add(Paragraph("\n"))
@@ -40,15 +43,7 @@ class InvoicePDFGenerationService {
         createOrderTable(document, cardmarketOrder)
         document.add(Paragraph("\n"))
 
-        document.add(createParagraph("Der ausgewiesene Betrag ist unmittelbar und ohne jeglichen Abzug zu entrichten.", smallFontSize))
-        document.add(createParagraph("Zu beachten: Gemäß § 19 UStG wird keine Umsatzsteuer berechnet.", smallFontSize))
-        document.add(Paragraph("\n"))
-
-        document.add(createParagraph("Freundliche Grüße", smallFontSize))
-        document.add(createParagraph("Daniel Erhard", smallFontSize))
-
-        addFooterToDocument(document)
-
+        createFinalPart(document)
         document.close()
 
         return baos.toByteArray()
@@ -92,39 +87,7 @@ class InvoicePDFGenerationService {
         orderTable.addHeaderCell(createCell(" Gesamtpreis", bold = true, backgroundColor = ColorConstants.LIGHT_GRAY).setBorderBottom(SolidBorder(1f)))
 
         cardmarketOrder.orderItems.map { orderItem ->
-            createArticleRow(orderTable, orderItem)
-        }
-
-        cardmarketOrder.orderItems.map { orderItem ->
-            createArticleRow(orderTable, orderItem)
-        }
-
-        cardmarketOrder.orderItems.map { orderItem ->
-            createArticleRow(orderTable, orderItem)
-        }
-
-        cardmarketOrder.orderItems.map { orderItem ->
-            createArticleRow(orderTable, orderItem)
-        }
-
-        cardmarketOrder.orderItems.map { orderItem ->
-            createArticleRow(orderTable, orderItem)
-        }
-
-        cardmarketOrder.orderItems.map { orderItem ->
-            createArticleRow(orderTable, orderItem)
-        }
-
-        cardmarketOrder.orderItems.map { orderItem ->
-            createArticleRow(orderTable, orderItem)
-        }
-
-        cardmarketOrder.orderItems.map { orderItem ->
-            createArticleRow(orderTable, orderItem)
-        }
-
-        cardmarketOrder.orderItems.map { orderItem ->
-            createArticleRow(orderTable, orderItem)
+                createArticleRow(orderTable, orderItem)
         }
 
         createEmptyBorderRow(orderTable, true)
@@ -170,39 +133,23 @@ class InvoicePDFGenerationService {
         orderTable.addCell(createCell("").setBorderBottom(SolidBorder(0.5f)))
     }
 
-    private fun addFooterToDocument(document: Document) {
-        val pdfDoc = document.pdfDocument
-        val lastPage = pdfDoc.lastPage
-        val pageSize = lastPage.pageSize
+    private fun createFinalPart(document: Document) {
+        val table = Table(UnitValue.createPercentArray(floatArrayOf(50f))).useAllAvailableWidth()
 
-        val footerYPosition = pageSize.bottom + 20
+        table
+            .addCell(createCell("Der ausgewiesene Betrag ist unmittelbar und ohne jeglichen Abzug zu entrichten."))
+            .addCell(createCell("Zu beachten: Gemäß § 19 UStG wird keine Umsatzsteuer berechnet."))
+            .addCell(createCell(""))
+            .addCell(createCell(""))
+            .addCell(createCell(""))
+            .addCell(createCell(""))
+            .addCell(createCell("Freundliche Grüße"))
+            .addCell(createCell("Daniel Erhard"))
+            .addCell(createCell(""))
+            .addCell(createCell(""))
+            .addCell(createCell(""))
 
-        val footerTable = createInvoiceFooterTable()
-
-        footerTable.setFixedPosition(
-            pdfDoc.numberOfPages,
-            pageSize.left + 36,
-            footerYPosition,
-            pageSize.width - 72
-        )
-
-        document.add(footerTable)
-    }
-
-    private fun createInvoiceFooterTable(): Table {
-        val footerTable = Table(UnitValue.createPercentArray(floatArrayOf(50f, 50f))).useAllAvailableWidth()
-
-        footerTable
-            .addCell(createCell("Thomas-Morus-Str. 2"))
-            .addCell(createCell("Kontaktinformation", textAlignment = TextAlignment.RIGHT))
-            .addCell(createCell("86916 Kaufering"))
-            .addCell(createCell("Daniel Erhard", textAlignment = TextAlignment.RIGHT))
-            .addCell(createCell("Deutschland"))
-            .addCell(createCell("Tel: 016097506045", textAlignment = TextAlignment.RIGHT))
-            .addCell(createCell("Ustd.ID-Nr.: DE360327004"))
-            .addCell(createCell("E-Mail: erhard-daniel-gew@gmx.de", textAlignment = TextAlignment.RIGHT))
-
-        return footerTable
+        document.add(table)
     }
 
     private fun createCell(
