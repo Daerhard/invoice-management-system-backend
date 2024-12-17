@@ -132,6 +132,29 @@ paths:
                 type: string
                 format: byte
 
+  /v1/orders:
+    get:
+      tags:
+        - orders
+      summary: get all orders
+      description: returns all orders
+      operationId: getOrders
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/cardmarketOrder'
+        '400':
+          description: invalid user id supplied in authentication token
+        '401':
+          description: not authenticated
+
+
+
   /v1/orders/{userName}:
     get:
       tags:
@@ -154,7 +177,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/order'
+                  $ref: '#/components/schemas/cardmarketOrder'
         '400':
           description: invalid user id supplied in authentication token
         '401':
@@ -178,10 +201,12 @@ components:
         - user_name
 
 
-    order:
+    cardmarketOrder:
       type: object
       description: order object
       properties:
+        customer:
+          $ref: '#/components/schemas/customer'
         order_id:
           type: integer
           format: int64
@@ -210,7 +235,7 @@ components:
           type: string
           description: Currency code for monetary values.
           example: EUR
-        purchaseItems:
+        orderItems:
           type: array
           description: List of items associated with the purchase.
           items:
@@ -223,6 +248,7 @@ components:
         - totalValue
         - commission
         - currency
+        - customer
 
     orderItem:
       type: object
