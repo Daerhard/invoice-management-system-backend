@@ -6,9 +6,10 @@ import invoice.management.system.model.CardmarketOrderDto
 fun CardmarketOrder.toDto() : CardmarketOrderDto {
     return CardmarketOrderDto(
         customer = customer.toDto(),
+        orderId = externalOrderId,
+        paymentDate = dateOfPayment,
         commission = commission,
         currency = currency,
-        orderId = externalOrderId,
         articleCount = articleCount,
         merchandiseValue = merchandiseValue,
         shipmentCost = shipmentCost,

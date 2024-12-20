@@ -153,8 +153,6 @@ paths:
         '401':
           description: not authenticated
 
-
-
   /v1/orders/{userName}:
     get:
       tags:
@@ -199,7 +197,7 @@ components:
             example: true
       required:
         - user_name
-
+        - is_professional
 
     cardmarketOrder:
       type: object
@@ -211,6 +209,10 @@ components:
           type: integer
           format: int64
           description: Unique identifier for the order.
+        payment_date:
+          type: string
+          format: date
+          description: Date of payment for the order.
         article_count:
           type: integer
           format: int32
@@ -241,14 +243,15 @@ components:
           items:
             $ref: '#/components/schemas/orderItem'
       required:
-        - orderId
-        - articleCount
-        - merchandiseValue
-        - shipmentCost
-        - totalValue
+        - customer
+        - order_id
+        - payment_date
+        - article_count
+        - merchandise_value
+        - shipment_cost
+        - total_value
         - commission
         - currency
-        - customer
 
     orderItem:
       type: object
@@ -276,7 +279,7 @@ components:
         card:
           $ref: '#/components/schemas/card'
       required:
-        - orderId
+        - order_id
         - count
         - condition
         - price
@@ -288,10 +291,10 @@ components:
       properties:
         id:
           $ref: '#/components/schemas/cardId'
-        completeDescription:
+        complete_description:
           type: string
           description: Detailed description of the card.
-        productName:
+        product_name:
           type: string
           description: Name of the product associated with the card.
         name:
@@ -303,17 +306,17 @@ components:
         rarity:
           type: string
           description: Rarity level of the card.
-        productId:
+        product_id:
           type: integer
           format: int64
           description: Identifier of the associated product.
       required:
         - id
-        - productName
+        - product_name
         - name
         - language
         - rarity
-        - productId
+        - product_id
 
     cardId:
       type: object
