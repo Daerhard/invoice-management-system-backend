@@ -15,6 +15,7 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
@@ -32,7 +33,8 @@ class InvoicePDFService(
 
         val resource = ByteArrayResource(invoicePDF)
 
-        val fileName = "${cardmarketOrder.dateOfPayment} Rechnung ${cardmarketOrder.externalOrderId} - ${cardmarketOrder.customer.fullName}.pdf"
+        val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+        val fileName = "${cardmarketOrder.dateOfPayment.format(formatter)} Rechnung ${cardmarketOrder.externalOrderId} - ${cardmarketOrder.customer.fullName}.pdf"
 
         return ResponseEntity.ok()
             .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; $fileName")
@@ -63,10 +65,11 @@ class InvoicePDFService(
     private fun createZipWithInvoices(invoices: List<invoiceData>): ByteArray {
         val baos = ByteArrayOutputStream()
         val zipOut = ZipOutputStream(baos)
+        val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy")
 
         invoices.forEachIndexed { index, invoice ->
             val cardmarketOrder = invoice.cardmarketOrder
-            val fileName = "${cardmarketOrder.dateOfPayment} Rechnung ${cardmarketOrder.externalOrderId} - ${cardmarketOrder.customer.fullName}.pdf"
+            val fileName = "${cardmarketOrder.dateOfPayment.format(formatter)} Rechnung ${cardmarketOrder.externalOrderId} - ${cardmarketOrder.customer.fullName}.pdf"
             val zipEntry = ZipEntry(fileName)
             zipOut.putNextEntry(zipEntry)
 
