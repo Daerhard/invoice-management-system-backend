@@ -11,18 +11,18 @@ class CardId(
     @Column(name = "konami_set")
     val konamiSet: String,
 
-    @Column(name = "number")
-    val number: Int,
+    @Column(name = "konami_number")
+    val konamiNumber: String,
 
 ) : Serializable {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is CardId) return false
-        return konamiSet== other.konamiSet && number == other.number
+        return konamiSet== other.konamiSet && konamiNumber == other.konamiNumber
     }
 
     override fun hashCode(): Int {
-        return konamiSet.hashCode() * 31 + number.hashCode()
+        return konamiSet.hashCode() * 31 + konamiNumber.hashCode()
     }
 }

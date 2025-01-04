@@ -70,7 +70,7 @@ class EntityFactory {
         )
 
         fun createCard(
-            cardId: CardId = CardId("25th Anniversary Tin: Dueling Mirrors", 147),
+            cardId: CardId = CardId("25th Anniversary Tin: Dueling Mirrors", "147"),
             completeDescription: String = "1x Trident Dragion (25th Anniversary Tin: Dueling Mirrors) - 147 - Secret Rare - NM - German - FirstEd - 12,80 EUR",
             productName: String = "Trident Dragion",
             name: String = "Dreiköpfiger Drache",

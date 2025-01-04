@@ -111,7 +111,7 @@ class InvoicePDFGenerationService {
         val count = orderItem.count.toString()
         val card = orderItem.card
         val isfirstEdition = if (orderItem.isFirstEdition) " - 1. Edition" else ""
-        val description = "${card.productName} - (${card.cardId.konamiSet}) - ${card.cardId.number} - ${orderItem.card.rarity} - ${orderItem.condition}${isfirstEdition}"
+        val description = "${card.productName} - (${card.cardId.konamiSet}) - ${card.cardId.konamiNumber} - ${orderItem.card.rarity} - ${orderItem.condition}${isfirstEdition}"
         val singlePrice = String.format("%.2f", orderItem.price)
         val totalPrice =  String.format("%.2f", (orderItem.price * orderItem.count))
 

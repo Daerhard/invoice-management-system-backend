@@ -8,7 +8,7 @@ fun Card.toDto() : CardDto {
     return CardDto(
         CardIdDto(
         konamiSet = cardId.konamiSet,
-        number = cardId.number,
+        number = cardId.konamiNumber,
         ),
         completeDescription = completeDescription,
         productName = productName,

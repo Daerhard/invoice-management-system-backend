@@ -30,7 +30,7 @@ data class OrderItem(
     @JoinColumns(
         value = [
             JoinColumn(name = "card_id_konami_set", referencedColumnName = "konami_set"),
-            JoinColumn(name = "card_id_number", referencedColumnName = "number")
+            JoinColumn(name = "card_id_konami_number", referencedColumnName = "konami_number")
         ]
     )
     val card: Card,

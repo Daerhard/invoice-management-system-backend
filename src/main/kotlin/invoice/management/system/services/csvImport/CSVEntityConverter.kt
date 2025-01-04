@@ -103,7 +103,7 @@ class CSVEntityConverter(
             Card(
                 CardId(
                     konamiSet = descriptionDetail.konamiSet,
-                    number = descriptionDetail.productNumber
+                    konamiNumber = descriptionDetail.productNumber
                 ),
                 completeDescription = orderProduct.description,
                 productName = descriptionDetail.productName,

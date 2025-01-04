@@ -14,6 +14,11 @@ val differentCardVersionRegex = Regex(
 val anniversaryEditionRegex = Regex(
     """^\d+x\s[^()]+?\s\([^()]+\s\([^()]+\)\)\s-\s\d+\s-\s[^()]+?\s-\s[^()]+?\s-\s[^()]+?\s-\s\d+,\d+\s[A-Z]{3}$"""
 )
+//1x Catch of the Day (Skill) (Speed Duel: Tournament Pack 6) - S02 - Common - NM - German - 1,45 EUR
+val speedDuelSkillRegex = Regex(
+    """^\d+x\s[^()]+?\s\([^()]+?\)\s\([^()]+?\)\s-\s[^()]+?\s-\s[^()]+?\s-\s[^()]+?\s-\s[^()]+?\s-\s\d+,\d+\s[A-Z]{3}$"""
+)
+
 
 @Service
 class ProductDescriptionService{
@@ -24,15 +29,15 @@ class ProductDescriptionService{
             description.matches(standardRegex) -> {
                 convertStandardString(description)
             }
-
             description.matches(differentCardVersionRegex) -> {
                 convertDifferentCardVersionString(description)
             }
-
             description.matches(anniversaryEditionRegex) -> {
                 convertAnniversaryEdition(description)
             }
-
+            description.matches(speedDuelSkillRegex) -> {
+                convertSpeedDuelSkill(description)
+            }
             else -> {
                 throw IllegalArgumentException("Description: $description does not match format")
             }
@@ -63,6 +68,15 @@ class ProductDescriptionService{
         return createDescriptionDetail(splitDescription)
     }
 
+    private fun convertSpeedDuelSkill(description: String): DescriptionDetail {
+        val regex =  Regex("""\([^()]*\)""")
+        val modifiedDescription = description.replaceFirst(regex, "").trim()
+
+        val splitDescription = convertDescriptionToList(modifiedDescription)
+
+        return createDescriptionDetail(splitDescription)
+    }
+
     private fun convertDescriptionToList(description: String): List<String> {
         val isFirstEdition = description.contains("First")
         val splitDescription = if (description.split("(")[0].contains(" - ")) {
@@ -87,10 +101,7 @@ class ProductDescriptionService{
             articleCount = articleCount,
             productName = splitProductTitle[0].replace(regex, ""),
             konamiSet = splitProductTitle[1].trimEnd(')'),
-            productNumber = splitDescription[1]
-                .replace(" ", "")
-                .replace("0", "")
-                .toInt(),
+            productNumber = splitDescription[1],
             rarity = splitDescription[2],
             condition = splitDescription[3],
             language = splitDescription[4],
@@ -112,7 +123,7 @@ data class DescriptionDetail(
     val articleCount: Int,
     val productName: String,
     val konamiSet: String,
-    val productNumber: Int,
+    val productNumber: String,
     val language: String,
     val condition: String,
     val rarity: String,

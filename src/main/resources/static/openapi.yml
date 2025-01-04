@@ -326,8 +326,7 @@ components:
           type: string
           description: Konami set identifier of the card.
         number:
-          type: integer
-          format: int32
+          type: string
           description: Unique card number within the Konami set.
       required:
         - konamiSet
