@@ -1,11 +1,9 @@
 package invoice.management.system.services.invoiceGeneration
 
 import com.itextpdf.io.source.ByteArrayOutputStream
-import com.itextpdf.layout.Document
 import invoice.management.system.api.InvoiceGenerationPDFApiDelegate
 import invoice.management.system.entities.CardmarketOrder
 import invoice.management.system.repositories.CardmarketOrderRepository
-import invoice.management.system.services.csvImport.anniversaryEditionRegex
 import invoice.management.system.services.invoiceGeneration.pdfGeneration.InvoicePDFGenerationService
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
@@ -25,7 +23,7 @@ class InvoicePDFService(
     private val cardmarketOrderRepository: CardmarketOrderRepository
 ) : InvoiceGenerationPDFApiDelegate {
 
-    override fun getPDFInvoice(cardmarketExternalOrderId: Long): ResponseEntity<Resource> {
+    override fun getInvoicePDF(cardmarketExternalOrderId: Long): ResponseEntity<Resource> {
         val cardmarketOrder = cardmarketOrderRepository.findByExternalOrderId(cardmarketExternalOrderId)
             ?: return ResponseEntity.notFound().build()
 
@@ -43,7 +41,7 @@ class InvoicePDFService(
             .body(resource)
     }
 
-    override fun getPDFInvoices(startDate: LocalDate, endDate: LocalDate): ResponseEntity<ByteArray> {
+    override fun getInvoicesPDF(startDate: LocalDate, endDate: LocalDate): ResponseEntity<ByteArray> {
         val cardmarketOrders = cardmarketOrderRepository.findByStartDateAndEndDate(startDate, endDate)
 
         val invoices = cardmarketOrders.map {

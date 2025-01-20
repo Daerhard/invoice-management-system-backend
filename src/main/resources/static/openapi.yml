@@ -67,13 +67,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/responseMessage'
 
-  /v1/generatePDFInvoice/{cardmarketExternalOrderId}:
+  /v1/generateInvoicePDF/{cardmarketExternalOrderId}:
     get:
       tags:
         - InvoiceGenerationPDF
       summary: Generate and save an invoice in pdf format
       description: Generate an invoice in pdf format and returns it for saving on the client's machine.
-      operationId: getPDFInvoice
+      operationId: getInvoicePDF
       parameters:
         - name: cardmarketExternalOrderId
           in: path
@@ -101,13 +101,13 @@ paths:
                     type: string
                     example: Internal server error occurred while generating the PDF.
 
-  /v1/generatePDFInvoices/{startDate}/{endDate}:
+  /v1/generateInvoicesPDF/{startDate}/{endDate}:
     get:
       tags:
         - InvoiceGenerationPDF
       summary: Download invoices as a ZIP file
       description: Generates multiple invoices in PDF format and compresses them into a ZIP file.
-      operationId: getPDFInvoices
+      operationId: getInvoicesPDF
       parameters:
         - name: startDate
           in: path
@@ -131,6 +131,40 @@ paths:
               schema:
                 type: string
                 format: byte
+
+  /v1/generateInvoiceZUGFeRD/{cardmarketExternalOrderId}:
+    get:
+      tags:
+        - InvoiceGenerationZUGFeRD
+      summary: Generate and save an invoice in ZUGFeRD format
+      description: Generate an invoice in ZUGFeRD format and returns it for saving on the client's machine.
+      operationId: getInvoiceZUGFeRD
+      parameters:
+        - name: cardmarketExternalOrderId
+          in: path
+          required: true
+          description: The external order id.
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: ZUGFeRD file generated successfully.
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '500':
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error occurred while generating the Invoice.
 
   /v1/orders:
     get:

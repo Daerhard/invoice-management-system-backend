@@ -48,7 +48,7 @@ class CSVTranslationService {
             street = fields[3],
             city = fields[4],
             country = fields[5],
-            isProfessional = fields[6].takeIf { it.isNotEmpty() }?.toBoolean(),
+            isProfessional = fields[6].isNotEmpty(),
             vatNumber = fields[7].takeIf { it.isNotEmpty() },
             dateOfPayment = LocalDateTime.parse(fields[8], DATE_FORMATTER),
             articleCount = fields[9].toInt(),

@@ -48,6 +48,7 @@ dependencies {
 	implementation("com.h2database:h2:2.2.220")
 
 	implementation ("com.itextpdf:itext7-core:7.1.19")
+	implementation ("io.konik:konik:1.1.0")
 
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 	runtimeOnly("com.mysql:mysql-connector-j")

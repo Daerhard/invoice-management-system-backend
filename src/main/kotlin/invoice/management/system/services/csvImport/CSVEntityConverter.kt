@@ -48,7 +48,7 @@ class CSVEntityConverter(
             street = csvOrder.street
             city = csvOrder.city
             country = csvOrder.country
-            isProfessional = csvOrder.isProfessional ?: isProfessional
+            isProfessional = csvOrder.isProfessional ?: false
         }
     }
 
