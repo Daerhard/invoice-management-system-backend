@@ -36,7 +36,7 @@ class CSVImportService(
             ResponseEntity(ResponseMessageDto("CSV file import was successful"), HttpStatus.CREATED)
         } catch (ex: Exception) {
             ResponseEntity(ResponseMessageDto(
-                "Internal Server Error."
+                ex.message
             ),HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }

@@ -37,6 +37,7 @@ dependencies {
 	val jUnitJupiterVersion = "5.10.2"
 	val testcontainersVersion = "1.19.8"
 
+	implementation ("io.github.microutils:kotlin-logging-jvm:2.0.11")
 	implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-web")
