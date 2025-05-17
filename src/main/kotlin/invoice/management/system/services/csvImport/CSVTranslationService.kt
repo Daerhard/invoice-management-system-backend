@@ -2,9 +2,10 @@ package invoice.management.system.services.csvImport
 
 import com.opencsv.CSVParserBuilder
 import com.opencsv.CSVReaderBuilder
+import invoice.management.system.services.orderItemDescription.DescriptionDetail
+import invoice.management.system.services.orderItemDescription.OrderItemDescriptionService
 import org.springframework.core.io.Resource
 import org.springframework.stereotype.Service
-import java.io.FileReader
 import java.io.InputStreamReader
 import java.io.Reader
 import java.time.LocalDateTime
@@ -30,18 +31,23 @@ class CSVTranslationService {
             .build()
             .use { csvReader ->
                 csvReader.readAll()
-                    .drop(1) // Skip header row
+                    .drop(1)
                     .map { fields -> parseOrder(fields) }
             }
     }
 
     private fun parseOrder(fields: Array<String>): CSVOrder {
         val completeDescription = fields[15]
-        val splitDescription = splitField(completeDescription)
-        val localizedProductNames = splitField(fields[17])
-        val productIds = splitField(fields[16]).map(String::toLong)
+        val splitDescription = completeDescription.split("|").map { it.trim() }
+        val localizedProductNames = fields[17].split("|").map { it.trim() }
+        val productIds = fields[16].split("|").map { it.trim() }.map(String::toLong)
+        val orderProducts = try {
+            createOrderProducts(localizedProductNames, productIds, splitDescription)
+        } catch (e: Exception) {
+            throw IllegalArgumentException("Failed to create order products for order ID: ${splitDescription[0].toLong()}", e)
+        }
 
-        return CSVOrder(
+        val csvOrder = CSVOrder(
             externalOrderId = fields[0].toLong(),
             username = fields[1],
             name = fields[2],
@@ -61,12 +67,9 @@ class CSVTranslationService {
             splitDescription = splitDescription,
             productIds = productIds,
             localizedProductNames = localizedProductNames,
-            orderProducts = createOrderProducts(localizedProductNames, productIds, splitDescription)
+            orderProducts = orderProducts
         )
-    }
-
-    private fun splitField(field: String): List<String> {
-        return field.split("|").map { it.trim() }
+        return csvOrder
     }
 
     private fun createOrderProducts(
@@ -74,9 +77,17 @@ class CSVTranslationService {
         productIds: List<Long>,
         splitDescription: List<String>
     ): List<OrderProduct> {
-        return localizedProductNames.zip(productIds).zip(splitDescription) { (name, id), description ->
-            OrderProduct(id, name, description, ProductDescriptionService().convertDescription(description))
+
+        val orderProducts = localizedProductNames.indices.map { index ->
+            OrderProduct(
+                productIds[index],
+                localizedProductNames[index],
+                splitDescription[index],
+                OrderItemDescriptionService().getDescriptionDetails(splitDescription[index])
+            )
         }
+
+        return orderProducts
     }
 }
 

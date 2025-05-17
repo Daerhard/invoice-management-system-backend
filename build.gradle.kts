@@ -62,6 +62,7 @@ dependencies {
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testImplementation("org.testcontainers:mysql:${testcontainersVersion}")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+	testImplementation(kotlin("test"))
 }
 
 tasks.getByName<Jar>("jar") {

@@ -37,7 +37,7 @@ class CSVImportService(
         } catch (ex: Exception) {
             ResponseEntity(ResponseMessageDto(
                 ex.message
-            ),HttpStatus.INTERNAL_SERVER_ERROR)
+            ),HttpStatus.BAD_REQUEST)
         }
     }
 }
