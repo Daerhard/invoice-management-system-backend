@@ -44,7 +44,7 @@ class CSVTranslationService {
         val orderProducts = try {
             createOrderProducts(localizedProductNames, productIds, splitDescription)
         } catch (e: Exception) {
-            throw IllegalArgumentException("Failed to create order products for order ID: ${splitDescription[0].toLong()}", e)
+            throw IllegalArgumentException("Failed to create order products for order ID: ${fields[0].toLong()}", e)
         }
 
         val csvOrder = CSVOrder(
