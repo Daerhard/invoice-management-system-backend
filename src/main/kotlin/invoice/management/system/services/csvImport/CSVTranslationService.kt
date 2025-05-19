@@ -16,7 +16,6 @@ class CSVTranslationService {
 
     companion object {
         private val CSV_PARSER = CSVParserBuilder().withSeparator(';').build()
-        private val DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
     }
 
     fun translateOrders(file: Resource): List<CSVOrder> {
@@ -56,7 +55,7 @@ class CSVTranslationService {
             country = fields[5],
             isProfessional = fields[6].isNotEmpty(),
             vatNumber = fields[7].takeIf { it.isNotEmpty() },
-            dateOfPayment = LocalDateTime.parse(fields[8], DATE_FORMATTER),
+            dateOfPayment = parsePaymentDate(fields[8]),
             articleCount = fields[9].toInt(),
             merchandiseValue = fields[10].replace(",", ".").toDoubleOrNull() ?: throw IllegalArgumentException("Invalid merchandise value"),
             shipmentCosts = fields[11].replace(",", ".").toDoubleOrNull() ?: throw IllegalArgumentException("Invalid shipment costs"),
@@ -88,6 +87,27 @@ class CSVTranslationService {
         }
 
         return orderProducts
+    }
+
+    fun parsePaymentDate(input: String): LocalDateTime {
+        val dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
+        val (rawDate, rawTime) = input.trim().split(" ")
+
+        val date = when {
+            "-" in rawDate -> {
+                val parts = rawDate.split("-")
+                if (parts[0].length == 4) "${parts[2]}-${parts[1]}-${parts[0]}" else rawDate
+            }
+            "." in rawDate -> {
+                val parts = rawDate.split(".")
+                if (parts[0].length == 4) "${parts[2]}-${parts[1]}-${parts[0]}" else rawDate.replace(".", "-")
+            }
+            else -> rawDate.replace(".", "-")
+        }
+
+        val time = rawTime.take(5)
+
+        return LocalDateTime.parse("$date $time", dateTimeFormatter)
     }
 }
 
