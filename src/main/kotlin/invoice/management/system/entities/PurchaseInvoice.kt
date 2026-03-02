@@ -26,8 +26,9 @@ data class PurchaseInvoice(
     @Column(name = "invoice_date", nullable = false)
     val invoiceDate: LocalDate,
 
-    @Column(name = "pdf_path", nullable = false, length = 1024)
-    val pdfPath: String,
+    @Lob
+    @Column(name = "pdf_data", nullable = false)
+    val pdfData: ByteArray,
 
     @Column(name = "created_at", nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),

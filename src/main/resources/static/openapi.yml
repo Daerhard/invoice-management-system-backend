@@ -281,6 +281,42 @@ paths:
               schema:
                 $ref: '#/components/schemas/responseMessage'
 
+  /v1/purchase-invoices/{id}/pdf:
+    get:
+      tags:
+        - PurchaseInvoices
+      summary: Download the PDF of a purchase invoice
+      description: Returns the stored PDF file for the given purchase invoice ID.
+      operationId: getPurchaseInvoicePdf
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The purchase invoice ID.
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: PDF file returned successfully.
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Purchase invoice not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responseMessage'
+        '500':
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responseMessage'
+
   /v1/orders/{userName}:
     get:
       tags:
@@ -483,9 +519,6 @@ components:
           type: string
           format: date
           description: Date of the invoice.
-        pdfPath:
-          type: string
-          description: Path to the stored PDF file.
         createdAt:
           type: string
           format: date-time
@@ -500,7 +533,6 @@ components:
         - amount
         - price
         - invoiceDate
-        - pdfPath
 
     responseMessage:
       type: object

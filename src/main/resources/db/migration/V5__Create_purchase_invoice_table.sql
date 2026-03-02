@@ -5,7 +5,7 @@ CREATE TABLE purchase_invoice
     amount       INT            NOT NULL,
     price        DECIMAL(19, 4) NOT NULL,
     invoice_date DATE           NOT NULL,
-    pdf_path     VARCHAR(1024)  NOT NULL,
+    pdf_data     LONGBLOB       NOT NULL,
     created_at   DATETIME       NOT NULL,
     updated_at   DATETIME       NOT NULL,
     PRIMARY KEY (id)

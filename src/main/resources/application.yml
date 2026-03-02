@@ -39,6 +39,3 @@ springdoc:
 server:
   servlet:
     context-path: '/invoice-management-system/api'
-
-purchase-invoices:
-  upload-dir: purchase-invoices

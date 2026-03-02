@@ -4,26 +4,24 @@ import invoice.management.system.api.PurchaseInvoicesApiDelegate
 import invoice.management.system.entities.PurchaseInvoice
 import invoice.management.system.model.PurchaseInvoiceResponseDto
 import invoice.management.system.repositories.PurchaseInvoiceRepository
-import org.springframework.beans.factory.annotation.Value
+import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
+import org.springframework.http.ContentDisposition
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.math.BigDecimal
-import java.nio.file.Files
-import java.nio.file.Paths
-import java.nio.file.StandardCopyOption
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
-import java.util.UUID
 
 @Service
 class PurchaseInvoiceService(
-    private val purchaseInvoiceRepository: PurchaseInvoiceRepository,
-    @Value("\${purchase-invoices.upload-dir:purchase-invoices}") private val uploadDir: String
+    private val purchaseInvoiceRepository: PurchaseInvoiceRepository
 ) : PurchaseInvoicesApiDelegate {
 
     override fun createPurchaseInvoice(
@@ -55,8 +53,8 @@ class PurchaseInvoiceService(
             return ResponseEntity(HttpStatus.BAD_REQUEST)
         }
 
-        val pdfPath = try {
-            storePdf(multipartFile)
+        val pdfBytes = try {
+            multipartFile.bytes
         } catch (ex: Exception) {
             return ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR)
         }
@@ -67,7 +65,7 @@ class PurchaseInvoiceService(
             amount = amount,
             price = BigDecimal.valueOf(price),
             invoiceDate = invoiceDate,
-            pdfPath = pdfPath,
+            pdfData = pdfBytes,
             createdAt = now,
             updatedAt = now
         )
@@ -82,15 +80,15 @@ class PurchaseInvoiceService(
         return ResponseEntity.ok(invoice.toDto())
     }
 
-    private fun storePdf(file: MultipartFile): String {
-        val uploadPath = Paths.get(uploadDir)
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath)
-        }
-        val fileName = "${UUID.randomUUID()}.pdf"
-        val targetPath = uploadPath.resolve(fileName)
-        Files.copy(file.inputStream, targetPath, StandardCopyOption.REPLACE_EXISTING)
-        return targetPath.toString()
+    override fun getPurchaseInvoicePdf(id: Long): ResponseEntity<Resource> {
+        val invoice = purchaseInvoiceRepository.findById(id).orElse(null)
+            ?: return ResponseEntity(HttpStatus.NOT_FOUND)
+        val headers = HttpHeaders()
+        headers.contentType = MediaType.APPLICATION_PDF
+        headers.contentDisposition = ContentDisposition.attachment()
+            .filename("purchase-invoice-$id.pdf")
+            .build()
+        return ResponseEntity(ByteArrayResource(invoice.pdfData), headers, HttpStatus.OK)
     }
 
     private fun PurchaseInvoice.toDto(): PurchaseInvoiceResponseDto =
@@ -100,7 +98,6 @@ class PurchaseInvoiceService(
             amount = amount,
             price = price.toDouble(),
             invoiceDate = invoiceDate,
-            pdfPath = pdfPath,
             createdAt = OffsetDateTime.of(createdAt, ZoneOffset.UTC),
             updatedAt = OffsetDateTime.of(updatedAt, ZoneOffset.UTC)
         )
