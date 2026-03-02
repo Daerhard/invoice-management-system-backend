@@ -38,3 +38,6 @@ out/
 
 ### Kotlin ###
 .kotlin
+
+### Purchase invoice uploads ###
+purchase-invoices/
