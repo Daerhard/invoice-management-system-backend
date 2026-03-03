@@ -232,80 +232,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/purchaseInvoiceResponse'
+                $ref: '#/components/schemas/purchaseInvoice'
         '400':
           description: Invalid input.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/responseMessage'
-        '500':
-          description: Server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/responseMessage'
-
-  /v1/purchase-invoices/{id}:
-    get:
-      tags:
-        - PurchaseInvoices
-      summary: Get a purchase invoice by ID
-      description: Returns purchase invoice metadata for the given ID.
-      operationId: getPurchaseInvoiceById
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: The purchase invoice ID.
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: Purchase invoice found.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/purchaseInvoiceResponse'
-        '404':
-          description: Purchase invoice not found.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/responseMessage'
-        '500':
-          description: Server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/responseMessage'
-
-  /v1/purchase-invoices/{id}/pdf:
-    get:
-      tags:
-        - PurchaseInvoices
-      summary: Download the PDF of a purchase invoice
-      description: Returns the stored PDF file for the given purchase invoice ID.
-      operationId: getPurchaseInvoicePdf
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: The purchase invoice ID.
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: PDF file returned successfully.
-          content:
-            application/pdf:
-              schema:
-                type: string
-                format: binary
-        '404':
-          description: Purchase invoice not found.
           content:
             application/json:
               schema:
@@ -496,13 +425,13 @@ components:
         - konamiSet
         - number
 
-    purchaseInvoiceResponse:
+    purchaseInvoice:
       type: object
       description: Purchase invoice response object
       properties:
         id:
           type: integer
-          format: int64
+          format: int32
           description: Unique identifier for the purchase invoice.
         productName:
           type: string

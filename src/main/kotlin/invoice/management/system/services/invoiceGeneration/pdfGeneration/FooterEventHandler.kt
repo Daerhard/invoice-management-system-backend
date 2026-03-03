@@ -12,8 +12,8 @@ import com.itextpdf.layout.borders.Border
 import com.itextpdf.layout.element.Cell
 import com.itextpdf.layout.element.Paragraph
 import com.itextpdf.layout.element.Table
-import com.itextpdf.layout.property.TextAlignment
-import com.itextpdf.layout.property.UnitValue
+import com.itextpdf.layout.properties.TextAlignment
+import com.itextpdf.layout.properties.UnitValue
 
 class FooterEventHandler : IEventHandler {
 

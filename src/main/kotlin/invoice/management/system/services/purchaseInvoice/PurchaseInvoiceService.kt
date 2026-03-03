@@ -2,14 +2,10 @@ package invoice.management.system.services.purchaseInvoice
 
 import invoice.management.system.api.PurchaseInvoicesApiDelegate
 import invoice.management.system.entities.PurchaseInvoice
-import invoice.management.system.model.PurchaseInvoiceResponseDto
+import invoice.management.system.model.PurchaseInvoiceDto
 import invoice.management.system.repositories.PurchaseInvoiceRepository
-import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
-import org.springframework.http.ContentDisposition
-import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
@@ -30,36 +26,39 @@ class PurchaseInvoiceService(
         price: Double,
         invoiceDate: LocalDate,
         pdf: Resource?
-    ): ResponseEntity<PurchaseInvoiceResponseDto> {
+    ): ResponseEntity<PurchaseInvoiceDto> {
 
         if (productName.isBlank()) {
-            return ResponseEntity(HttpStatus.BAD_REQUEST)
+            return ResponseEntity.badRequest().build()
         }
+
         if (amount <= 0) {
-            return ResponseEntity(HttpStatus.BAD_REQUEST)
+            return ResponseEntity.badRequest().build()
         }
+
         if (price <= 0.0) {
-            return ResponseEntity(HttpStatus.BAD_REQUEST)
+            return ResponseEntity.badRequest().build()
         }
+
         if (pdf == null) {
-            return ResponseEntity(HttpStatus.BAD_REQUEST)
-        }
-
-        val multipartFile = pdf as? MultipartFile
-            ?: return ResponseEntity(HttpStatus.BAD_REQUEST)
-
-        val contentType = multipartFile.contentType
-        if (contentType == null || !contentType.equals("application/pdf", ignoreCase = true)) {
-            return ResponseEntity(HttpStatus.BAD_REQUEST)
+            return ResponseEntity.badRequest().build()
         }
 
         val pdfBytes = try {
-            multipartFile.bytes
+            pdf.inputStream.readBytes()
         } catch (ex: Exception) {
-            return ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR)
+            return ResponseEntity.internalServerError().build()
+        }
+
+        if (pdfBytes.size < 4 ||
+            !pdfBytes.copyOfRange(0, 4)
+                .contentEquals(byteArrayOf(0x25, 0x50, 0x44, 0x46))
+        ) {
+            return ResponseEntity.badRequest().build()
         }
 
         val now = LocalDateTime.now()
+
         val entity = PurchaseInvoice(
             productName = productName,
             amount = amount,
@@ -74,26 +73,9 @@ class PurchaseInvoiceService(
         return ResponseEntity(saved.toDto(), HttpStatus.CREATED)
     }
 
-    override fun getPurchaseInvoiceById(id: Long): ResponseEntity<PurchaseInvoiceResponseDto> {
-        val invoice = purchaseInvoiceRepository.findById(id).orElse(null)
-            ?: return ResponseEntity(HttpStatus.NOT_FOUND)
-        return ResponseEntity.ok(invoice.toDto())
-    }
-
-    override fun getPurchaseInvoicePdf(id: Long): ResponseEntity<Resource> {
-        val invoice = purchaseInvoiceRepository.findById(id).orElse(null)
-            ?: return ResponseEntity(HttpStatus.NOT_FOUND)
-        val headers = HttpHeaders()
-        headers.contentType = MediaType.APPLICATION_PDF
-        headers.contentDisposition = ContentDisposition.attachment()
-            .filename("purchase-invoice-$id.pdf")
-            .build()
-        return ResponseEntity(ByteArrayResource(invoice.pdfData), headers, HttpStatus.OK)
-    }
-
-    private fun PurchaseInvoice.toDto(): PurchaseInvoiceResponseDto =
-        PurchaseInvoiceResponseDto(
-            id = id!!,
+    private fun PurchaseInvoice.toDto(): PurchaseInvoiceDto =
+        PurchaseInvoiceDto(
+            id = id,
             productName = productName,
             amount = amount,
             price = price.toDouble(),
