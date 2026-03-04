@@ -3,7 +3,6 @@ package invoice.management.system.entities
 import jakarta.persistence.*
 import java.math.BigDecimal
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 @Entity
 @Table(name = "purchase_invoice")
@@ -21,15 +20,13 @@ data class PurchaseInvoice(
     @Column(name = "invoice_date", nullable = false)
     val invoiceDate: LocalDate,
 
-    @Lob
-    @Column(name = "pdf_data", nullable = false)
-    val pdfData: ByteArray,
-
-    @Column(name = "created_at", nullable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now(),
-
-    @Column(name = "updated_at", nullable = false)
-    var updatedAt: LocalDateTime = LocalDateTime.now(),
+    @OneToOne(
+        cascade = [CascadeType.ALL],
+        orphanRemoval = true,
+        fetch = FetchType.LAZY
+    )
+    @JoinColumn(name = "document_id", unique = true)
+    var document: PurchaseInvoiceDocument? = null
 ) {
 
     @Id
@@ -43,7 +40,7 @@ data class PurchaseInvoice(
         return id == other.id
     }
 
-    override fun hashCode(): Int = id?.hashCode() ?: 0
+    override fun hashCode(): Int = id.hashCode()
 
     override fun toString(): String = "PurchaseInvoice(id=$id)"
 }

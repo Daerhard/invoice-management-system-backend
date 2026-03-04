@@ -192,7 +192,7 @@ paths:
       tags:
         - PurchaseInvoices
       summary: Create a new purchase invoice with PDF upload
-      description: Accepts a PDF file and invoice metadata to create a purchase invoice.
+      description: Accepts structured invoice data and a PDF file and stores them separately.
       operationId: createPurchaseInvoice
       requestBody:
         required: true
@@ -201,30 +201,13 @@ paths:
             schema:
               type: object
               properties:
-                productName:
-                  type: string
-                  description: Product name (Konami set / card ID reference).
-                amount:
-                  type: integer
-                  format: int32
-                  description: Number of items purchased.
-                price:
-                  type: number
-                  format: double
-                  description: Price of the purchase.
-                invoiceDate:
-                  type: string
-                  format: date
-                  description: Date of the invoice (YYYY-MM-DD).
+                invoiceData:
+                  $ref: '#/components/schemas/purchaseInvoice'
                 pdf:
                   type: string
                   format: binary
-                  description: The PDF invoice file.
               required:
-                - productName
-                - amount
-                - price
-                - invoiceDate
+                - invoiceData
                 - pdf
       responses:
         '201':
@@ -245,6 +228,45 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/responseMessage'
+
+    get:
+      tags:
+        - PurchaseInvoices
+      summary: Get all purchase invoices
+      operationId: getAllPurchaseInvoices
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/purchaseInvoice'
+
+  /v1/purchase-invoices/{id}/pdf:
+    get:
+      tags:
+        - PurchaseInvoices
+      summary: Download purchase invoice PDF
+      operationId: getPurchaseInvoicePdf
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: PDF file
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: PDF not found
 
   /v1/orders/{userName}:
     get:
@@ -427,7 +449,7 @@ components:
 
     purchaseInvoice:
       type: object
-      description: Purchase invoice response object
+      description: Structured data required to create a purchase invoice.
       properties:
         id:
           type: integer
@@ -435,27 +457,15 @@ components:
           description: Unique identifier for the purchase invoice.
         productName:
           type: string
-          description: Product name (Konami set / card ID reference).
         amount:
           type: integer
           format: int32
-          description: Number of items purchased.
         price:
           type: number
           format: double
-          description: Price of the purchase.
         invoiceDate:
           type: string
           format: date
-          description: Date of the invoice.
-        createdAt:
-          type: string
-          format: date-time
-          description: Timestamp when the invoice was created.
-        updatedAt:
-          type: string
-          format: date-time
-          description: Timestamp when the invoice was last updated.
       required:
         - id
         - productName
