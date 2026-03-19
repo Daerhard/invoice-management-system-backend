@@ -46,6 +46,9 @@ data class CardmarketOrder(
         orphanRemoval = true
     )
     val orderItems: MutableList<OrderItem> = mutableListOf(),
+
+    @OneToOne(mappedBy = "order", fetch = FetchType.LAZY)
+    val invoice: Invoice? = null,
 ) {
 
     override fun equals(other: Any?): Boolean {

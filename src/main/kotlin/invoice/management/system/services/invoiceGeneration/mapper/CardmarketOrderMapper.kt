@@ -16,6 +16,7 @@ fun CardmarketOrder.toDto() : CardmarketOrderDto {
         totalValue = totalValue,
         orderItems = orderItems.map { orderItem ->
             orderItem.toDto()
-        }
+        },
+        invoice = invoice?.toDto(),
     )
 }

@@ -1,16 +1,22 @@
 package invoice.management.system.services.invoiceGeneration
 
 import invoice.management.system.api.OrdersApiDelegate
+import invoice.management.system.entities.Invoice
 import invoice.management.system.model.*
 import invoice.management.system.repositories.CardmarketOrderRepository
+import invoice.management.system.repositories.InvoiceRepository
 import invoice.management.system.services.invoiceGeneration.mapper.toDto
+import invoice.management.system.services.invoiceGeneration.pdfGeneration.InvoicePDFGenerationService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
+import java.time.Instant
 
 @Service
 class CardmarketOrderService(
-    private val cardmarketOrderRepository: CardmarketOrderRepository
+    private val cardmarketOrderRepository: CardmarketOrderRepository,
+    private val invoiceRepository: InvoiceRepository,
+    private val invoicePDFGenerationService: InvoicePDFGenerationService,
 ) : OrdersApiDelegate {
 
     override fun getOrders(): ResponseEntity<List<CardmarketOrderDto>> {
@@ -31,5 +37,23 @@ class CardmarketOrderService(
             cardmarketOrder.toDto()
         }
         return ResponseEntity(cardmarketOrderDtos, HttpStatus.OK)
+    }
+
+    override fun createInvoice(externalOrderId: Long): ResponseEntity<InvoiceDto> {
+        val order = cardmarketOrderRepository.findByExternalOrderId(externalOrderId)
+            ?: return ResponseEntity.notFound().build()
+
+        if (invoiceRepository.findByOrder(order) != null) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build()
+        }
+
+        val pdfBytes = invoicePDFGenerationService.generateInvoicePdf(order)
+        val invoice = Invoice(
+            order = order,
+            createdAt = Instant.now(),
+            invoicePdf = pdfBytes,
+        )
+        val savedInvoice = invoiceRepository.save(invoice)
+        return ResponseEntity(savedInvoice.toDto(), HttpStatus.CREATED)
     }
 }
