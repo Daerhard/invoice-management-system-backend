@@ -36,10 +36,13 @@ class PurchaseInvoiceService(
             return ResponseEntity.badRequest().build()
         }
 
-        val purchaseInvoiceDocument = PurchaseInvoiceDocument(pdfBytes)
-        val purchaseInvoice = invoiceData.toEntity(purchaseInvoiceDocument)
+        val purchaseInvoice = invoiceData.toEntity()
         val savedPurchaseInvoice = purchaseInvoiceRepository.save(purchaseInvoice)
-        return ResponseEntity(savedPurchaseInvoice.toDto(), HttpStatus.CREATED)
+
+        val purchaseInvoiceDocument = PurchaseInvoiceDocument(pdfBytes)
+        savedPurchaseInvoice.attachDocument(purchaseInvoiceDocument)
+        val finalPurchaseInvoice = purchaseInvoiceRepository.save(savedPurchaseInvoice)
+        return ResponseEntity(finalPurchaseInvoice.toDto(), HttpStatus.CREATED)
     }
 
     override fun getAllPurchaseInvoices(): ResponseEntity<List<PurchaseInvoiceDto>> {

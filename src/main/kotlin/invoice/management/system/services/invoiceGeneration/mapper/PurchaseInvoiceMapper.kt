@@ -14,12 +14,11 @@ fun PurchaseInvoice.toDto() : PurchaseInvoiceDto = PurchaseInvoiceDto(
     invoiceDate = this.invoiceDate,
 )
 
-fun PurchaseInvoiceDto.toEntity(purchaseInvoiceDocument: PurchaseInvoiceDocument): PurchaseInvoice = PurchaseInvoice(
+fun PurchaseInvoiceDto.toEntity(): PurchaseInvoice = PurchaseInvoice(
     productName = this.productName,
     amount = this.amount,
     price = this.price.toBigDecimal(),
     invoiceDate = this.invoiceDate,
-    document = purchaseInvoiceDocument
 ).apply { this.id = this.id }
 
 fun PurchaseInvoiceDocument.toResource() : Resource {

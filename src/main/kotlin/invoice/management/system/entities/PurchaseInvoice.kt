@@ -20,19 +20,20 @@ data class PurchaseInvoice(
     @Column(name = "invoice_date", nullable = false)
     val invoiceDate: LocalDate,
 
-    @OneToOne(
-        cascade = [CascadeType.ALL],
-        orphanRemoval = true,
-        fetch = FetchType.LAZY
-    )
-    @JoinColumn(name = "document_id", unique = true)
+    @OneToOne(mappedBy = "invoice", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
     var document: PurchaseInvoiceDocument? = null
+
 ) {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     var id: Int = 0
+
+    fun attachDocument(document: PurchaseInvoiceDocument) {
+        this.document = document
+        document.invoice = this
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

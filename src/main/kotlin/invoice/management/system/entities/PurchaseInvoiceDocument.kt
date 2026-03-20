@@ -10,6 +10,10 @@ data class PurchaseInvoiceDocument(
     @Column(name = "pdf_data", nullable = false)
     val pdfData: ByteArray,
 
+    @OneToOne
+    @JoinColumn(name = "purchase_invoice_id")
+    var invoice: PurchaseInvoice? = null
+
     ) {
 
     @Id
