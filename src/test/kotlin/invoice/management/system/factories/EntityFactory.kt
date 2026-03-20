@@ -1,6 +1,7 @@
 package invoice.management.system.factories
 
 import invoice.management.system.entities.*
+import java.time.Instant
 import java.time.LocalDate
 
 class EntityFactory {
@@ -85,6 +86,16 @@ class EntityFactory {
             language = language,
             rarity = rarity,
             productId = productId,
+        )
+
+        fun createInvoice(
+            order: CardmarketOrder = createCardmarketOrder(),
+            createdAt: Instant = Instant.now(),
+            invoicePdf: ByteArray? = null,
+        ) = Invoice(
+            order = order,
+            createdAt = createdAt,
+            invoicePdf = invoicePdf,
         )
     }
 }
