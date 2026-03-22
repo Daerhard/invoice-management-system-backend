@@ -16,6 +16,7 @@ class EntityFactory {
             country: String = "Germany",
             isProfessional: Boolean = true,
             vatNumber: String = "DE123456789",
+            email: String? = null,
         ) = Customer(
             userName = userName,
             fullName = fullName,
@@ -23,7 +24,8 @@ class EntityFactory {
             city = city,
             country = country,
             isProfessional = isProfessional,
-            vatNumber = vatNumber
+            vatNumber = vatNumber,
+            email = email,
         )
 
         fun createCardmarketOrder(

@@ -29,6 +29,59 @@ paths:
         '401':
           description: not authenticated
 
+  /v1/customers/professional:
+    get:
+      tags:
+        - customers
+      summary: get all professional customers
+      description: returns all customers where isProfessional is true
+      operationId: getProfessionalCustomers
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/customer'
+        '400':
+          description: invalid user id supplied in authentication token
+        '401':
+          description: not authenticated
+
+  /v1/customers/{userName}/email:
+    patch:
+      tags:
+        - customers
+      summary: update customer email
+      description: updates the email address of a specific customer
+      operationId: updateCustomerEmail
+      parameters:
+        - name: userName
+          in: path
+          required: true
+          description: The username of the customer.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/emailUpdate'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/customer'
+        '404':
+          description: customer not found
+        '400':
+          description: invalid input
+
   /v1/import:
     post:
       tags:
@@ -337,9 +390,26 @@ components:
             type: boolean
             description: status of the customer
             example: true
+        email:
+          type: string
+          nullable: true
+          description: email address of the customer
+          example: "customer@example.com"
       required:
         - user_name
         - is_professional
+
+    emailUpdate:
+      type: object
+      description: request body for updating customer email
+      properties:
+        email:
+          type: string
+          nullable: true
+          description: new email address of the customer
+          example: "customer@example.com"
+      required:
+        - email
 
     cardmarketOrder:
       type: object

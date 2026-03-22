@@ -27,4 +27,7 @@ data class Customer(
 
     @Column(name = "vat_number", nullable = true)
     val vatNumber: String? = null,
+
+    @Column(name = "email", nullable = true)
+    var email: String? = null,
     )
