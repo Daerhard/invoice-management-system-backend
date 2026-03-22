@@ -7,5 +7,6 @@ fun Customer.toDto() : CustomerDto {
     return CustomerDto(
         userName = userName,
         isProfessional = isProfessional,
+        email = email,
     )
 }

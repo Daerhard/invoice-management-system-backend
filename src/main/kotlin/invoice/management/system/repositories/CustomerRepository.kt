@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository
 interface CustomerRepository: CrudRepository<Customer, Int>{
 
     fun findByUserName(userName: String): Customer?
+
+    fun findByIsProfessional(isProfessional: Boolean): List<Customer>
 }
