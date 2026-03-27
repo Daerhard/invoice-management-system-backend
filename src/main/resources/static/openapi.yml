@@ -376,8 +376,90 @@ paths:
         '409':
           description: Invoice already exists for this order.
 
+  /v1/orders/{externalOrderId}/send-invoice-email:
+    post:
+      tags:
+        - InvoiceEmail
+      summary: Send the invoice for an order via email
+      description: Sends the stored invoice PDF for the given order to the customer's email address. Returns 404 if the order or invoice is not found, 400 if the customer has no email address.
+      operationId: sendInvoiceEmail
+      parameters:
+        - name: externalOrderId
+          in: path
+          required: true
+          description: The external order id.
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Email sent successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responseMessage'
+        '400':
+          description: Customer has no email address.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responseMessage'
+        '404':
+          description: Order or invoice not found.
+        '500':
+          description: Failed to send email.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responseMessage'
+
+  /test/send-invoice-email:
+    post:
+      tags:
+        - InvoiceEmail
+      summary: Send a test invoice email to a custom address
+      description: Looks up the invoice by bestellnummer and sends it to the provided test email address, overriding the customer's stored email.
+      operationId: testSendInvoiceEmail
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/testSendInvoiceEmailRequest'
+      responses:
+        '200':
+          description: Test email sent successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responseMessage'
+        '404':
+          description: Order or invoice not found.
+        '500':
+          description: Failed to send email.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responseMessage'
+
 components:
   schemas:
+    testSendInvoiceEmailRequest:
+      type: object
+      description: Request body for the test send invoice email endpoint.
+      properties:
+        testEmail:
+          type: string
+          description: Email address to send the test invoice to.
+          example: "your@email.com"
+        bestellnummer:
+          type: integer
+          format: int64
+          description: The external order id whose invoice should be sent.
+          example: 12345
+      required:
+        - testEmail
+        - bestellnummer
     customer:
       type: object
       description: customer object

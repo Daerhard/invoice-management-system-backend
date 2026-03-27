@@ -5,18 +5,23 @@ import invoice.management.system.entities.Invoice
 import invoice.management.system.model.*
 import invoice.management.system.repositories.CardmarketOrderRepository
 import invoice.management.system.repositories.InvoiceRepository
+import invoice.management.system.services.email.EmailService
 import invoice.management.system.services.invoiceGeneration.mapper.toDto
 import invoice.management.system.services.invoiceGeneration.pdfGeneration.InvoicePDFGenerationService
+import mu.KotlinLogging
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import java.time.Instant
+
+private val logger = KotlinLogging.logger {}
 
 @Service
 class CardmarketOrderService(
     private val cardmarketOrderRepository: CardmarketOrderRepository,
     private val invoiceRepository: InvoiceRepository,
     private val invoicePDFGenerationService: InvoicePDFGenerationService,
+    private val emailService: EmailService,
 ) : OrdersApiDelegate {
 
     override fun getOrders(): ResponseEntity<List<CardmarketOrderDto>> {
@@ -54,6 +59,13 @@ class CardmarketOrderService(
             invoicePdf = pdfBytes,
         )
         val savedInvoice = invoiceRepository.save(invoice)
+
+        try {
+            emailService.sendInvoiceEmail(order.customer.email, externalOrderId, pdfBytes)
+        } catch (e: Exception) {
+            logger.error(e) { "Invoice created but email sending failed for order $externalOrderId." }
+        }
+
         return ResponseEntity(savedInvoice.toDto(), HttpStatus.CREATED)
     }
 }
