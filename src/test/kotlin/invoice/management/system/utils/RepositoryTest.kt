@@ -4,6 +4,7 @@ import invoice.management.system.repositories.CardRepository
 import invoice.management.system.repositories.CardmarketOrderRepository
 import invoice.management.system.repositories.CustomerRepository
 import invoice.management.system.repositories.InvoiceRepository
+import invoice.management.system.repositories.UserRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager
 
@@ -20,6 +21,9 @@ open class RepositoryTest: MySQLTestContainer {
 
     @Autowired
     lateinit var invoiceRepository: InvoiceRepository
+
+    @Autowired
+    lateinit var userRepository: UserRepository
 
     @Autowired
     lateinit var entityManager: TestEntityManager

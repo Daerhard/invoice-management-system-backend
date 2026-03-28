@@ -4,6 +4,8 @@ import invoice.management.system.entities.*
 import java.time.Instant
 import java.time.LocalDate
 
+
+
 class EntityFactory {
 
     companion object {
@@ -98,6 +100,26 @@ class EntityFactory {
             order = order,
             createdAt = createdAt,
             invoicePdf = invoicePdf,
+        )
+
+        fun createUser(
+            username: String = "testuser",
+            password: String = "password123",
+            firstName: String = "John",
+            lastName: String = "Doe",
+            zipCode: String = "12345",
+            city: String = "Berlin",
+            street: String = "Main Street 1",
+            email: String = "john.doe@example.com",
+        ) = User(
+            username = username,
+            password = password,
+            firstName = firstName,
+            lastName = lastName,
+            zipCode = zipCode,
+            city = city,
+            street = street,
+            email = email,
         )
     }
 }
