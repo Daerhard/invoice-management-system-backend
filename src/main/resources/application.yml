@@ -44,7 +44,11 @@ springdoc:
     groups:
       enabled: true
   swagger-ui:
-    url: /openapi.yml
+    urls:
+      - name: main
+        url: /openapi.yml
+      - name: email
+        url: /email-openapi.yml
     display-request-duration: true
     groups-order: desc
     default-models-expand-depth: -1

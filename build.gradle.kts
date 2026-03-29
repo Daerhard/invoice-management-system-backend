@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 plugins {
 
@@ -105,30 +106,24 @@ allOpen {
 	annotation("jakarta.persistence.Embeddable")
 }
 
-tasks.withType<KotlinCompile> {
-
-	dependsOn(tasks.openApiGenerate)
-	mustRunAfter(tasks.openApiGenerate)
-
-	compilerOptions {
-		jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_23)
-	}
-}
-
-tasks.withType<Test> {
-	useJUnitPlatform()
-	testLogging {
-		events("passed", "failed", "skipped")
-	}
-}
+// ============================= OPENAPI GENERATION =============================
 
 val openApiOutputDirPath =
 	project.layout.buildDirectory.dir("generated_sources/openAPI")
+
+val emailOpenApiOutputDirPath =
+	project.layout.buildDirectory.dir("generated_sources/emailOpenAPI")
 
 tasks.register<Delete>("cleanOpenApiOutputDir") {
 	group = "build"
 	description = "Delete generated OpenAPI sources"
 	delete(openApiOutputDirPath.get().asFile)
+}
+
+tasks.register<Delete>("cleanEmailOpenApiOutputDir") {
+	group = "build"
+	description = "Delete generated email OpenAPI sources"
+	delete(emailOpenApiOutputDirPath.get().asFile)
 }
 
 tasks.openApiGenerate {
@@ -157,7 +152,64 @@ tasks.openApiGenerate {
 	)
 }
 
+val openApiGenerateEmailTask = tasks.register<GenerateTask>("openApiGenerateEmail") {
+
+	dependsOn(tasks.named("cleanEmailOpenApiOutputDir"))
+
+	inputSpec.set("$rootDir/src/main/resources/static/email-openapi.yml")
+	outputDir.set(emailOpenApiOutputDirPath.get().asFile.absolutePath)
+
+	packageName.set(rootProject.name)
+	invokerPackage.set("${rootProject.name}.security")
+	apiPackage.set("${rootProject.name}.api")
+	modelPackage.set("${rootProject.name}.model")
+	modelNameSuffix.set("Dto")
+	generatorName.set("kotlin-spring")
+
+	configOptions.set(
+		mapOf(
+			"useSpringBoot3" to "true",
+			"delegatePattern" to "true",
+			"interfaceOnly" to "true",
+			"dateLibrary" to "java8",
+			"useTags" to "true",
+			"enumPropertyNaming" to "UPPERCASE"
+		)
+	)
+
+	// Remove files that are already provided by the main openApiGenerate task
+	// to avoid duplicate class definitions in the combined source set.
+	doLast {
+		val outputBase = emailOpenApiOutputDirPath.get().asFile.absolutePath
+		listOf(
+			"$outputBase/src/main/kotlin/invoice/management/system/api/ApiUtil.kt",
+			"$outputBase/src/main/kotlin/invoice/management/system/api/Exceptions.kt",
+			"$outputBase/src/main/kotlin/invoice/management/system/security/SpringDocConfiguration.kt",
+		).forEach { file(it).delete() }
+	}
+}
+
+// ============================= COMPILE =============================
+
+tasks.withType<KotlinCompile> {
+
+	dependsOn(tasks.openApiGenerate, openApiGenerateEmailTask)
+	mustRunAfter(tasks.openApiGenerate, openApiGenerateEmailTask)
+
+	compilerOptions {
+		jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_23)
+	}
+}
+
+tasks.withType<Test> {
+	useJUnitPlatform()
+	testLogging {
+		events("passed", "failed", "skipped")
+	}
+}
+
 sourceSets {
 	val main by getting
 	main.java.srcDir("${openApiOutputDirPath.get()}/src/main/kotlin")
+	main.java.srcDir("${emailOpenApiOutputDirPath.get()}/src/main/kotlin")
 }
