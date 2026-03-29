@@ -7,15 +7,45 @@ info:
     The combined openapi.yml is generated from this master file by the Gradle
     task 'mergeOpenApiSpecs'. Do not edit openapi.yml directly; edit the
     individual service specs instead.
-  version: 1.0.0
+  version: 2.0.0
 
 servers:
   - url: 'http://localhost:8080/invoice-management-system/api/'
     description: local server
 
-# List of service specification files to merge into openapi.yml.
-# The mergeOpenApiSpecs Gradle task reads this list and combines all paths
-# and component schemas from each file in the order listed below.
-x-merge-sources:
-  - ./openapi_invoice_management_system.yml
-  - ./openapi_e-mail_service.yml
+paths:
+  # Invoice-Management-System
+  /v1/shift_groups:
+    $ref: "./openapi_workplace_priorities.yaml#/paths/~1v1~1shift_groups"
+  /v1/shift_group/{shiftGroupId}/priority_profile_items:
+    $ref: "./openapi_workplace_priorities.yaml#/paths/~1v1~1shift_group~1{shiftGroupId}~1priority_profile_items"
+  /v1/shift_group/{shiftGroupId}/priority_profiles:
+    $ref: "./openapi_workplace_priorities.yaml#/paths/~1v1~1shift_group~1{shiftGroupId}~1priority_profiles"
+  /v1/shift_group/{shiftGroupId}/priority_profile/{profileId}:
+    $ref: "./openapi_workplace_priorities.yaml#/paths/~1v1~1shift_group~1{shiftGroupId}~1priority_profile~1{profileId}"
+  /v1/shift_group/{shiftGroupId}/priority_profiles/by_date/{date}:
+    $ref: "./openapi_workplace_priorities.yaml#/paths/~1v1~1shift_group~1{shiftGroupId}~1priority_profiles~1by_date~1{date}"
+  /v1/shift_group/{shiftGroupId}/priority_profiles/by_date/for_automatic_planning/{date}:
+    $ref: "./openapi_workplace_priorities.yaml#/paths/~1v1~1shift_group~1{shiftGroupId}~1priority_profiles~1by_date~1for_automatic_planning~1{date}"
+  /v1/shift_group/{shiftGroupId}/report_xlsx:
+    $ref: "./openapi_workplace_priorities.yaml#/paths/~1v1~1shift_group~1{shiftGroupId}~1report_xlsx"
+
+    # E-Mail-System
+  /v1/shift_group/{shiftGroupId}/planning_template:
+    $ref: "./openapi_planning_template.yaml#/paths/~1v1~1shift_group~1{shiftGroupId}~1planning_template"
+
+components:
+  schemas:
+    # Invoice-Management-System
+    shift_group:
+      $ref: "./openapi_workplace_priorities.yaml#/components/schemas/shift_group"
+    priority_profile_item:
+      $ref: "./openapi_workplace_priorities.yaml#/components/schemas/priority_profile_item"
+    priority_profile:
+      $ref: "./openapi_workplace_priorities.yaml#/components/schemas/priority_profile"
+    workplace_priority:
+      $ref: "./openapi_workplace_priorities.yaml#/components/schemas/workplace_priority"
+
+    # E-Mail-System
+    planning_template:
+      $ref: "./openapi_planning_template.yaml#/components/schemas/planning_template"

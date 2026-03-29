@@ -1,3 +1,4 @@
+import org.apache.tools.ant.taskdefs.condition.Os
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
@@ -117,94 +118,33 @@ allOpen {
 // ============================= OPENAPI MERGE =============================
 
 val openApiStaticDir = "$rootDir/src/main/resources/static"
+val openApiOutputDirPath =
+	project.layout.buildDirectory.dir("generated_sources/openAPI")
 
-tasks.register("mergeOpenApiSpecs") {
-	group = "openapi tools"
-	description = "Merges service specs referenced in openapi_master.yml into the combined openapi.yml"
-
-	val masterFile = file("$openApiStaticDir/openapi_master.yml")
-	val outputFile = file("$openApiStaticDir/openapi.yml")
-
-	inputs.file(masterFile)
-	inputs.files(
-		file("$openApiStaticDir/openapi_invoice_management_system.yml"),
-		file("$openApiStaticDir/openapi_e-mail_service.yml")
+val bundleOpenApi by tasks.registering(Exec::class) {
+	var command = arrayOf(
+		"npx", "swagger-cli", "bundle", "src/main/resources/static/openapiSpecs/master_openapi.yaml",
+		"--outfile", "src/main/resources/static/openapi.yml", "--type", "yaml"
 	)
-	outputs.file(outputFile)
-
-	doLast {
-		val loaderOptions = org.yaml.snakeyaml.LoaderOptions()
-		val yaml = org.yaml.snakeyaml.Yaml(
-			org.yaml.snakeyaml.constructor.SafeConstructor(loaderOptions)
-		)
-
-		@Suppress("UNCHECKED_CAST")
-		val masterSpec = yaml.load<Map<String, Any>>(masterFile.readText()) as Map<String, Any>
-
-		@Suppress("UNCHECKED_CAST")
-		val sources = (masterSpec["x-merge-sources"] as? List<*>)
-			?.filterIsInstance<String>()
-			?: error("openapi_master.yml must contain a non-empty 'x-merge-sources' list")
-		val baseDir = masterFile.parentFile
-
-		val mergedPaths = linkedMapOf<String, Any>()
-		val mergedSchemas = linkedMapOf<String, Any>()
-
-		sources.forEach { sourcePath ->
-			val sourceFile = baseDir.resolve(sourcePath)
-			require(sourceFile.exists()) {
-				"Source spec file referenced in openapi_master.yml not found: ${sourceFile.absolutePath}"
-			}
-			@Suppress("UNCHECKED_CAST")
-			val sourceSpec = yaml.load<Map<String, Any>>(sourceFile.readText()) as Map<String, Any>
-
-			@Suppress("UNCHECKED_CAST")
-			val paths = sourceSpec["paths"] as? Map<String, Any> ?: emptyMap()
-			mergedPaths.putAll(paths)
-
-			@Suppress("UNCHECKED_CAST")
-			val components = sourceSpec["components"] as? Map<String, Any> ?: emptyMap()
-			@Suppress("UNCHECKED_CAST")
-			val schemas = components["schemas"] as? Map<String, Any> ?: emptyMap()
-			mergedSchemas.putAll(schemas)
-		}
-
-		val merged = linkedMapOf<String, Any>(
-			"openapi" to (masterSpec["openapi"] as String),
-			"info" to (masterSpec["info"] as Map<*, *>),
-			"servers" to (masterSpec["servers"] as List<*>),
-			"paths" to mergedPaths,
-			"components" to linkedMapOf("schemas" to mergedSchemas)
-		)
-
-		val dumperOptions = org.yaml.snakeyaml.DumperOptions().apply {
-			defaultFlowStyle = org.yaml.snakeyaml.DumperOptions.FlowStyle.BLOCK
-			isPrettyFlow = true
-			indent = 2
-			indicatorIndent = 2
-			indentWithIndicator = true
-		}
-		val dumper = org.yaml.snakeyaml.Yaml(dumperOptions)
-		outputFile.writeText(dumper.dump(merged))
-
-		println("✓ Merged ${sources.size} OpenAPI spec(s) into ${outputFile.name}")
+	if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+		// On Windows gradle can not find the npx executable, even if it is in the PATH,
+		// however the "cmd" executable can find npx.
+		command = arrayOf("cmd", "/C", *command)
 	}
+	commandLine(*command)
+}
+
+tasks.register<Delete>("cleanOpenApiOutputDir") {
+	description = "Delete generated code from OpenAPI files."
+	group = tasks.openApiGenerate.get().group
+	delete(openApiOutputDirPath.get().toString())
 }
 
 // ============================= OPENAPI GENERATION =============================
 
-val openApiOutputDirPath =
-	project.layout.buildDirectory.dir("generated_sources/openAPI")
-
-tasks.register<Delete>("cleanOpenApiOutputDir") {
-	group = "build"
-	description = "Delete generated OpenAPI sources"
-	delete(openApiOutputDirPath.get().asFile)
-}
-
 tasks.openApiGenerate {
 
-	dependsOn(tasks.named("mergeOpenApiSpecs"), tasks.named("cleanOpenApiOutputDir"))
+	dependsOn(bundleOpenApi, tasks.named("cleanOpenApiOutputDir"))
 
 	inputSpec.set("$openApiStaticDir/openapi.yml")
 	outputDir.set(openApiOutputDirPath.get().asFile.absolutePath)

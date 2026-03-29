@@ -90,7 +90,6 @@ paths:
 
 components:
   schemas:
-
     emailSendRequest:
       type: object
       description: Request body for sending a generic email.
