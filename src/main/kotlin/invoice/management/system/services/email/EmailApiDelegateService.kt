@@ -5,11 +5,13 @@ import invoice.management.system.model.EmailSendRequestDto
 import invoice.management.system.model.EmailSendResponseDto
 import invoice.management.system.model.InvoiceEmailRequestDto
 import invoice.management.system.repositories.CardmarketOrderRepository
+import invoice.management.system.repositories.InvoiceRepository
 import invoice.management.system.services.invoiceGeneration.pdfGeneration.InvoicePDFGenerationService
 import mu.KotlinLogging
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
+import java.time.Instant
 import java.time.format.DateTimeFormatter
 
 private val logger = KotlinLogging.logger {}
@@ -28,6 +30,7 @@ class EmailApiDelegateService(
     private val emailService: EmailService,
     private val invoicePDFGenerationService: InvoicePDFGenerationService,
     private val cardmarketOrderRepository: CardmarketOrderRepository,
+    private val invoiceRepository: InvoiceRepository,
 ) : EmailApiDelegate {
 
     /**
@@ -94,6 +97,13 @@ class EmailApiDelegateService(
                     attachments = listOf(EmailAttachment(fileName = fileName, content = pdfBytes)),
                 )
             )
+            invoiceRepository.findByOrder(order)?.let { invoice ->
+                try {
+                    invoiceRepository.save(invoice.copy(sentAt = Instant.now()))
+                } catch (ex: Exception) {
+                    logger.error(ex) { "Failed to update sentAt for invoice of order $orderId" }
+                }
+            }
             ResponseEntity.ok(EmailSendResponseDto(message = "Invoice email sent successfully to $recipient."))
         } catch (ex: EmailSendException) {
             logger.error(ex) { "Failed to send invoice email for order $orderId to $recipient" }
