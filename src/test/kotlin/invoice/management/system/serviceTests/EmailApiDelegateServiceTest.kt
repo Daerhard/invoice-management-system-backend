@@ -14,6 +14,7 @@ import invoice.management.system.services.email.EmailRequest
 import invoice.management.system.services.email.EmailSendException
 import invoice.management.system.services.email.EmailService
 import invoice.management.system.services.invoiceGeneration.pdfGeneration.InvoicePDFGenerationService
+import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
@@ -113,6 +114,23 @@ class EmailApiDelegateServiceTest {
         val captor = ArgumentCaptor.forClass(Invoice::class.java)
         verify(invoiceRepository).save(captor.capture())
         assertNotNull(captor.value.sentAt)
+    }
+
+    @Test
+    fun whenSendInvoiceEmail_withAlreadySentInvoice_thenSentAtIsNotOverridden() {
+        val customer = createCustomer(email = "customer@example.com")
+        val order = createCardmarketOrder(orderId = 42L, customer = customer)
+        val originalSentAt = Instant.parse("2024-01-01T10:00:00Z")
+        val invoice = createInvoice(order = order, sentAt = originalSentAt)
+        `when`(cardmarketOrderRepository.findByExternalOrderId(42L)).thenReturn(order)
+        `when`(invoicePDFGenerationService.generateInvoicePdf(order)).thenReturn("PDF".toByteArray())
+        `when`(invoiceRepository.findByOrder(order)).thenReturn(invoice)
+
+        service.sendInvoiceEmail(42L, null)
+
+        val captor = ArgumentCaptor.forClass(Invoice::class.java)
+        verify(invoiceRepository).save(captor.capture())
+        assertEquals(originalSentAt, captor.value.sentAt)
     }
 
     @Test
