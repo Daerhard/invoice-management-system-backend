@@ -1,8 +1,6 @@
 package invoice.management.system.services.email
 
 import jakarta.mail.MessagingException
-import jakarta.mail.Session
-import jakarta.mail.internet.MimeMessage
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.mail.MailAuthenticationException
@@ -10,7 +8,6 @@ import org.springframework.mail.MailSendException
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.MimeMessageHelper
 import org.springframework.stereotype.Service
-import java.util.Properties
 
 private val logger = KotlinLogging.logger {}
 
@@ -37,11 +34,6 @@ private val logger = KotlinLogging.logger {}
 class EmailService(
     private val mailSender: JavaMailSender,
     @Value("\${email.from}") private val fromAddress: String,
-    @Value("\${email.imap.host:imap.gmx.net}") private val imapHost: String,
-    @Value("\${email.imap.port:993}") private val imapPort: Int,
-    @Value("\${email.imap.username:}") private val imapUsername: String,
-    @Value("\${email.imap.password:}") private val imapPassword: String,
-    @Value("\${email.imap.sent-folder:Gesendet}") private val sentFolderName: String,
 ) {
 
     /**
@@ -76,7 +68,6 @@ class EmailService(
 
             mailSender.send(message)
             logger.info { "Email successfully sent to ${request.to}" }
-            saveCopyToSentFolder(message)
 
         } catch (ex: MailAuthenticationException) {
             logger.error(ex) { "SMTP authentication failed while sending email to ${request.to}" }
@@ -87,56 +78,6 @@ class EmailService(
         } catch (ex: MessagingException) {
             logger.error(ex) { "Failed to build MIME message for ${request.to}" }
             throw EmailSendException("Failed to build email message: ${ex.message}", ex)
-        }
-    }
-
-    private fun saveCopyToSentFolder(message: MimeMessage) {
-        if (imapUsername.isBlank() || imapPassword.isBlank()) {
-            logger.warn { "Skipping IMAP sent-copy: credentials are not configured." }
-            return
-        }
-
-        val properties = Properties().apply {
-            put("mail.store.protocol", "imaps")
-            put("mail.imaps.host", imapHost)
-            put("mail.imaps.port", imapPort.toString())
-            put("mail.imaps.ssl.enable", "true")
-        }
-
-        var store: jakarta.mail.Store? = null
-        var folder: jakarta.mail.Folder? = null
-
-        try {
-            val session = Session.getInstance(properties)
-            store = session.getStore("imaps")
-            store.connect(imapHost, imapPort, imapUsername, imapPassword)
-
-            val folderCandidates = listOf(sentFolderName, "Gesendet", "Sent").distinct()
-            folder = folderCandidates
-                .asSequence()
-                .map { store.getFolder(it) }
-                .firstOrNull { it.exists() }
-                ?: store.getFolder(sentFolderName)
-
-            if (!folder.exists()) {
-                folder.create(jakarta.mail.Folder.HOLDS_MESSAGES)
-            }
-
-            folder.open(jakarta.mail.Folder.READ_WRITE)
-            folder.appendMessages(arrayOf(message))
-            logger.info { "Saved sent email copy to IMAP folder '${folder.fullName}'." }
-        } catch (ex: Exception) {
-            // Best-effort only: sending already succeeded, so do not fail the request.
-            logger.warn(ex) { "Email sent, but could not save a copy to IMAP sent folder." }
-        } finally {
-            try {
-                folder?.close(false)
-            } catch (_: Exception) {
-            }
-            try {
-                store?.close()
-            } catch (_: Exception) {
-            }
         }
     }
 }
