@@ -10,6 +10,7 @@ import invoice.management.system.services.invoiceGeneration.pdfGeneration.Invoic
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
 
 @Service
@@ -19,6 +20,7 @@ class CardmarketOrderService(
     private val invoicePDFGenerationService: InvoicePDFGenerationService,
 ) : OrdersApiDelegate {
 
+    @Transactional(readOnly = true)
     override fun getOrders(): ResponseEntity<List<CardmarketOrderDto>> {
         val cardmarketOrders = cardmarketOrderRepository.findAll()
 
@@ -28,12 +30,11 @@ class CardmarketOrderService(
         return ResponseEntity(cardmarketOrderDtos, HttpStatus.OK)
     }
 
+    @Transactional(readOnly = true)
     override fun getOrdersByUserName(userName: String): ResponseEntity<List<CardmarketOrderDto>> {
-        val cardmarketOrders = cardmarketOrderRepository.findAll()
+        val cardmarketOrders = cardmarketOrderRepository.findByCustomerUserName(userName)
 
-        val cardmarketOrderDtos = cardmarketOrders.filter {
-            it.customer.userName == userName
-        }.map { cardmarketOrder ->
+        val cardmarketOrderDtos = cardmarketOrders.map { cardmarketOrder ->
             cardmarketOrder.toDto()
         }
         return ResponseEntity(cardmarketOrderDtos, HttpStatus.OK)
