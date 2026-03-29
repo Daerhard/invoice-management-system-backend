@@ -14,7 +14,7 @@ import invoice.management.system.services.email.EmailRequest
 import invoice.management.system.services.email.EmailSendException
 import invoice.management.system.services.email.EmailService
 import invoice.management.system.services.invoiceGeneration.pdfGeneration.InvoicePDFGenerationService
-import java.time.Instant
+import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
@@ -120,7 +120,7 @@ class EmailApiDelegateServiceTest {
     fun whenSendInvoiceEmail_withAlreadySentInvoice_thenSentAtIsNotOverridden() {
         val customer = createCustomer(email = "customer@example.com")
         val order = createCardmarketOrder(orderId = 42L, customer = customer)
-        val originalSentAt = Instant.parse("2024-01-01T10:00:00Z")
+        val originalSentAt = LocalDate.of(2024, 1, 1)
         val invoice = createInvoice(order = order, sentAt = originalSentAt)
         `when`(cardmarketOrderRepository.findByExternalOrderId(42L)).thenReturn(order)
         `when`(invoicePDFGenerationService.generateInvoicePdf(order)).thenReturn("PDF".toByteArray())

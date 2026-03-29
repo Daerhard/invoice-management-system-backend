@@ -2,6 +2,7 @@ package invoice.management.system.entities
 
 import jakarta.persistence.*
 import java.time.Instant
+import java.time.LocalDate
 
 @Entity
 @Table(name = "invoice")
@@ -19,7 +20,7 @@ data class Invoice(
     val invoicePdf: ByteArray? = null,
 
     @Column(name = "sent_at")
-    val sentAt: Instant? = null,
+    val sentAt: LocalDate? = null,
 ) {
 
     @Id

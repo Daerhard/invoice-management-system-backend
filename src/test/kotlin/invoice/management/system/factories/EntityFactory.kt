@@ -96,7 +96,7 @@ class EntityFactory {
             order: CardmarketOrder = createCardmarketOrder(),
             createdAt: Instant = Instant.now(),
             invoicePdf: ByteArray? = null,
-            sentAt: Instant? = null,
+            sentAt: LocalDate? = null,
         ) = Invoice(
             order = order,
             createdAt = createdAt,

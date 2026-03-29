@@ -11,7 +11,7 @@ import mu.KotlinLogging
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
-import java.time.Instant
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 private val logger = KotlinLogging.logger {}
@@ -99,7 +99,7 @@ class EmailApiDelegateService(
             )
             invoiceRepository.findByOrder(order)?.let { invoice ->
                 try {
-                    invoiceRepository.save(invoice.copy(sentAt = invoice.sentAt ?: Instant.now()))
+                    invoiceRepository.save(invoice.copy(sentAt = invoice.sentAt ?: LocalDate.now()))
                 } catch (ex: Exception) {
                     logger.error(ex) { "Failed to update sentAt for invoice of order $orderId" }
                 }
