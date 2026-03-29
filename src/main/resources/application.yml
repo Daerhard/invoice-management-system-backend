@@ -54,6 +54,8 @@ springdoc:
         url: /openapi_invoice_management_system.yml
       - name: email-service
         url: /openapi_e-mail_service.yml
+      - name: zugferd-service
+        url: /openapi_zugferd_service.yml
     display-request-duration: true
     groups-order: desc
     default-models-expand-depth: -1

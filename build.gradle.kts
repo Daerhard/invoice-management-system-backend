@@ -17,7 +17,7 @@ plugins {
 	val dependencyMgmtVersion = "1.1.7"
 	val flywayVersion = "10.22.0"
 	val openApiGeneratorVersion = "7.10.0"
-	val swaggerVersion = "2.2.27"
+	val swaggerVersion = "2.2.28"
 
 	kotlin("jvm") version kotlinVersion
 	kotlin("plugin.spring") version kotlinVersion
@@ -38,9 +38,9 @@ group = "invoice.management.system"
 version = "0.0.1-SNAPSHOT"
 
 java {
-	sourceCompatibility = JavaVersion.VERSION_23
+	sourceCompatibility = JavaVersion.VERSION_21
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(23)
+		languageVersion = JavaLanguageVersion.of(21)
 	}
 }
 
@@ -72,7 +72,7 @@ dependencies {
 	// ================= FILES / PDF =================
 	implementation("com.opencsv:opencsv:5.9")
 	implementation("com.itextpdf:itext7-core:8.0.4")
-	implementation("io.konik:konik:1.1.0")
+	implementation("org.mustangproject:library:2.14.0")
 
 	// ================= DATABASE =================
 	implementation("org.flywaydb:flyway-core")
@@ -176,7 +176,7 @@ tasks.withType<KotlinCompile> {
 	mustRunAfter(tasks.openApiGenerate)
 
 	compilerOptions {
-		jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_23)
+		jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
 	}
 }
 
