@@ -1,5 +1,13 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+
+buildscript {
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath("org.yaml:snakeyaml:2.3")
+	}
+}
 
 plugins {
 
@@ -106,13 +114,87 @@ allOpen {
 	annotation("jakarta.persistence.Embeddable")
 }
 
+// ============================= OPENAPI MERGE =============================
+
+val openApiStaticDir = "$rootDir/src/main/resources/static"
+
+tasks.register("mergeOpenApiSpecs") {
+	group = "openapi tools"
+	description = "Merges service specs referenced in openapi_master.yml into the combined openapi.yml"
+
+	val masterFile = file("$openApiStaticDir/openapi_master.yml")
+	val outputFile = file("$openApiStaticDir/openapi.yml")
+
+	inputs.file(masterFile)
+	inputs.files(
+		file("$openApiStaticDir/openapi_invoice_management_system.yml"),
+		file("$openApiStaticDir/openapi_e-mail_service.yml")
+	)
+	outputs.file(outputFile)
+
+	doLast {
+		val loaderOptions = org.yaml.snakeyaml.LoaderOptions()
+		val yaml = org.yaml.snakeyaml.Yaml(
+			org.yaml.snakeyaml.constructor.SafeConstructor(loaderOptions)
+		)
+
+		@Suppress("UNCHECKED_CAST")
+		val masterSpec = yaml.load<Map<String, Any>>(masterFile.readText()) as Map<String, Any>
+
+		@Suppress("UNCHECKED_CAST")
+		val sources = (masterSpec["x-merge-sources"] as? List<*>)
+			?.filterIsInstance<String>()
+			?: error("openapi_master.yml must contain a non-empty 'x-merge-sources' list")
+		val baseDir = masterFile.parentFile
+
+		val mergedPaths = linkedMapOf<String, Any>()
+		val mergedSchemas = linkedMapOf<String, Any>()
+
+		sources.forEach { sourcePath ->
+			val sourceFile = baseDir.resolve(sourcePath)
+			require(sourceFile.exists()) {
+				"Source spec file referenced in openapi_master.yml not found: ${sourceFile.absolutePath}"
+			}
+			@Suppress("UNCHECKED_CAST")
+			val sourceSpec = yaml.load<Map<String, Any>>(sourceFile.readText()) as Map<String, Any>
+
+			@Suppress("UNCHECKED_CAST")
+			val paths = sourceSpec["paths"] as? Map<String, Any> ?: emptyMap()
+			mergedPaths.putAll(paths)
+
+			@Suppress("UNCHECKED_CAST")
+			val components = sourceSpec["components"] as? Map<String, Any> ?: emptyMap()
+			@Suppress("UNCHECKED_CAST")
+			val schemas = components["schemas"] as? Map<String, Any> ?: emptyMap()
+			mergedSchemas.putAll(schemas)
+		}
+
+		val merged = linkedMapOf<String, Any>(
+			"openapi" to (masterSpec["openapi"] as String),
+			"info" to (masterSpec["info"] as Map<*, *>),
+			"servers" to (masterSpec["servers"] as List<*>),
+			"paths" to mergedPaths,
+			"components" to linkedMapOf("schemas" to mergedSchemas)
+		)
+
+		val dumperOptions = org.yaml.snakeyaml.DumperOptions().apply {
+			defaultFlowStyle = org.yaml.snakeyaml.DumperOptions.FlowStyle.BLOCK
+			isPrettyFlow = true
+			indent = 2
+			indicatorIndent = 2
+			indentWithIndicator = true
+		}
+		val dumper = org.yaml.snakeyaml.Yaml(dumperOptions)
+		outputFile.writeText(dumper.dump(merged))
+
+		println("✓ Merged ${sources.size} OpenAPI spec(s) into ${outputFile.name}")
+	}
+}
+
 // ============================= OPENAPI GENERATION =============================
 
 val openApiOutputDirPath =
 	project.layout.buildDirectory.dir("generated_sources/openAPI")
-
-val emailOpenApiOutputDirPath =
-	project.layout.buildDirectory.dir("generated_sources/emailOpenAPI")
 
 tasks.register<Delete>("cleanOpenApiOutputDir") {
 	group = "build"
@@ -120,17 +202,11 @@ tasks.register<Delete>("cleanOpenApiOutputDir") {
 	delete(openApiOutputDirPath.get().asFile)
 }
 
-tasks.register<Delete>("cleanEmailOpenApiOutputDir") {
-	group = "build"
-	description = "Delete generated email OpenAPI sources"
-	delete(emailOpenApiOutputDirPath.get().asFile)
-}
-
 tasks.openApiGenerate {
 
-	dependsOn(tasks.named("cleanOpenApiOutputDir"))
+	dependsOn(tasks.named("mergeOpenApiSpecs"), tasks.named("cleanOpenApiOutputDir"))
 
-	inputSpec.set("$rootDir/src/main/resources/static/openapi.yml")
+	inputSpec.set("$openApiStaticDir/openapi.yml")
 	outputDir.set(openApiOutputDirPath.get().asFile.absolutePath)
 
 	packageName.set(rootProject.name)
@@ -152,49 +228,12 @@ tasks.openApiGenerate {
 	)
 }
 
-val openApiGenerateEmailTask = tasks.register<GenerateTask>("openApiGenerateEmail") {
-
-	dependsOn(tasks.named("cleanEmailOpenApiOutputDir"))
-
-	inputSpec.set("$rootDir/src/main/resources/static/email-openapi.yml")
-	outputDir.set(emailOpenApiOutputDirPath.get().asFile.absolutePath)
-
-	packageName.set(rootProject.name)
-	invokerPackage.set("${rootProject.name}.security")
-	apiPackage.set("${rootProject.name}.api")
-	modelPackage.set("${rootProject.name}.model")
-	modelNameSuffix.set("Dto")
-	generatorName.set("kotlin-spring")
-
-	configOptions.set(
-		mapOf(
-			"useSpringBoot3" to "true",
-			"delegatePattern" to "true",
-			"interfaceOnly" to "true",
-			"dateLibrary" to "java8",
-			"useTags" to "true",
-			"enumPropertyNaming" to "UPPERCASE"
-		)
-	)
-
-	// Remove files that are already provided by the main openApiGenerate task
-	// to avoid duplicate class definitions in the combined source set.
-	doLast {
-		val outputBase = emailOpenApiOutputDirPath.get().asFile.absolutePath
-		listOf(
-			"$outputBase/src/main/kotlin/invoice/management/system/api/ApiUtil.kt",
-			"$outputBase/src/main/kotlin/invoice/management/system/api/Exceptions.kt",
-			"$outputBase/src/main/kotlin/invoice/management/system/security/SpringDocConfiguration.kt",
-		).forEach { file(it).delete() }
-	}
-}
-
 // ============================= COMPILE =============================
 
 tasks.withType<KotlinCompile> {
 
-	dependsOn(tasks.openApiGenerate, openApiGenerateEmailTask)
-	mustRunAfter(tasks.openApiGenerate, openApiGenerateEmailTask)
+	dependsOn(tasks.openApiGenerate)
+	mustRunAfter(tasks.openApiGenerate)
 
 	compilerOptions {
 		jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_23)
@@ -211,5 +250,4 @@ tasks.withType<Test> {
 sourceSets {
 	val main by getting
 	main.java.srcDir("${openApiOutputDirPath.get()}/src/main/kotlin")
-	main.java.srcDir("${emailOpenApiOutputDirPath.get()}/src/main/kotlin")
 }

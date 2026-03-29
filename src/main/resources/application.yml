@@ -45,10 +45,12 @@ springdoc:
       enabled: true
   swagger-ui:
     urls:
-      - name: main
+      - name: combined
         url: /openapi.yml
-      - name: email
-        url: /email-openapi.yml
+      - name: invoice-management-system
+        url: /openapi_invoice_management_system.yml
+      - name: email-service
+        url: /openapi_e-mail_service.yml
     display-request-duration: true
     groups-order: desc
     default-models-expand-depth: -1

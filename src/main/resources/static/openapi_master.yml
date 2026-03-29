@@ -1,0 +1,21 @@
+openapi: '3.0.1'
+info:
+  title: Invoice Management System – Complete API
+  description: >
+    Master specification that combines all services of the Invoice Management
+    System into a single OpenAPI document.
+    The combined openapi.yml is generated from this master file by the Gradle
+    task 'mergeOpenApiSpecs'. Do not edit openapi.yml directly; edit the
+    individual service specs instead.
+  version: 1.0.0
+
+servers:
+  - url: 'http://localhost:8080/invoice-management-system/api/'
+    description: local server
+
+# List of service specification files to merge into openapi.yml.
+# The mergeOpenApiSpecs Gradle task reads this list and combines all paths
+# and component schemas from each file in the order listed below.
+x-merge-sources:
+  - ./openapi_invoice_management_system.yml
+  - ./openapi_e-mail_service.yml
