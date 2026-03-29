@@ -1,0 +1,148 @@
+openapi: '3.0.1'
+info:
+  title: invoice management system – email service
+  description: Endpoints for sending emails and invoice PDFs to customers via GMX SMTP.
+  version: 1.0.0
+
+servers:
+  - url: 'http://localhost:8080/invoice-management-system/api/'
+    description: local server
+
+paths:
+
+  /v1/email/send:
+    post:
+      tags:
+        - email
+      summary: Send an email
+      description: Sends a plain-text or HTML email to the specified recipient.
+      operationId: sendEmail
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/emailSendRequest'
+      responses:
+        '200':
+          description: Email sent successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/emailSendResponse'
+        '400':
+          description: Invalid request data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/emailSendResponse'
+        '500':
+          description: Failed to send email.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/emailSendResponse'
+
+  /v1/email/invoice/{orderId}:
+    post:
+      tags:
+        - email
+      summary: Send invoice email
+      description: >
+        Generates the PDF invoice for the given order and sends it to the customer's
+        stored email address. The recipient address can be overridden via the optional
+        request body. Returns 404 when the order does not exist or the customer has
+        no email address and no override was provided.
+      operationId: sendInvoiceEmail
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          description: External order id of the order whose invoice should be emailed.
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/invoiceEmailRequest'
+      responses:
+        '200':
+          description: Invoice email sent successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/emailSendResponse'
+        '404':
+          description: Order not found or customer has no email address.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/emailSendResponse'
+        '500':
+          description: Failed to generate or send the invoice email.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/emailSendResponse'
+
+components:
+  schemas:
+
+    emailSendRequest:
+      type: object
+      description: Request body for sending a generic email.
+      properties:
+        to:
+          type: string
+          description: Recipient email address.
+          example: "customer@example.com"
+        subject:
+          type: string
+          description: Subject line of the email.
+          example: "Your invoice"
+        body:
+          type: string
+          description: >
+            Body content of the email.
+            Treated as plain text when isHtml is false, as HTML when isHtml is true.
+          example: "Dear customer, please find your invoice attached."
+        isHtml:
+          type: boolean
+          description: When true the body is treated as HTML.
+          default: false
+      required:
+        - to
+        - subject
+        - body
+
+    invoiceEmailRequest:
+      type: object
+      description: >
+        Optional request body for the invoice email endpoint.
+        All fields are optional; omitting the body entirely is valid.
+      properties:
+        to:
+          type: string
+          nullable: true
+          description: >
+            Override recipient email address.
+            When omitted the customer's stored email is used.
+          example: "customer@example.com"
+        subject:
+          type: string
+          nullable: true
+          description: >
+            Override subject line.
+            When omitted a default subject is generated from the order details.
+          example: "Your invoice #12345"
+
+    emailSendResponse:
+      type: object
+      description: Response returned after an email send attempt.
+      properties:
+        message:
+          type: string
+          example: "Email sent successfully."

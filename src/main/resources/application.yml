@@ -21,6 +21,21 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
+  mail:
+    host: '${SMTP_HOST:mail.gmx.net}'
+    port: ${SMTP_PORT:587}
+    username: '${SMTP_USERNAME:}'
+    password: '${SMTP_PASSWORD:}'
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
 
 
 springdoc:
@@ -29,7 +44,11 @@ springdoc:
     groups:
       enabled: true
   swagger-ui:
-    url: /openapi.yml
+    urls:
+      - name: main
+        url: /openapi.yml
+      - name: email
+        url: /email-openapi.yml
     display-request-duration: true
     groups-order: desc
     default-models-expand-depth: -1
@@ -39,3 +58,6 @@ springdoc:
 server:
   servlet:
     context-path: '/invoice-management-system/api'
+
+email:
+  from: '${SMTP_USERNAME:}'
