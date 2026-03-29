@@ -1,6 +1,7 @@
 package invoice.management.system.repositories
 
 import invoice.management.system.entities.CardmarketOrder
+import org.springframework.data.jpa.repository.EntityGraph
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
@@ -20,5 +21,11 @@ interface CardmarketOrderRepository: CrudRepository<CardmarketOrder, Int> {
     """
     )
     fun findByStartDateAndEndDate(startDate: LocalDate, endDate: LocalDate): List<CardmarketOrder>
+
+    @EntityGraph(attributePaths = ["customer", "orderItems", "orderItems.card"])
+    override fun findAll(): List<CardmarketOrder>
+
+    @EntityGraph(attributePaths = ["customer", "orderItems", "orderItems.card"])
+    fun findByCustomerUserName(userName: String): List<CardmarketOrder>
 
 }
