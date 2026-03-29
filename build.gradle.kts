@@ -1,5 +1,14 @@
+import org.apache.tools.ant.taskdefs.condition.Os
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+
+buildscript {
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath("org.yaml:snakeyaml:2.3")
+	}
+}
 
 plugins {
 
@@ -106,31 +115,38 @@ allOpen {
 	annotation("jakarta.persistence.Embeddable")
 }
 
-// ============================= OPENAPI GENERATION =============================
+// ============================= OPENAPI MERGE =============================
 
+val openApiStaticDir = "$rootDir/src/main/resources/static"
 val openApiOutputDirPath =
 	project.layout.buildDirectory.dir("generated_sources/openAPI")
 
-val emailOpenApiOutputDirPath =
-	project.layout.buildDirectory.dir("generated_sources/emailOpenAPI")
+val bundleOpenApi by tasks.registering(Exec::class) {
+	var command = arrayOf(
+		"npx", "swagger-cli", "bundle", "src/main/resources/static/openapiSpecs/master_openapi.yaml",
+		"--outfile", "src/main/resources/static/openapi.yml", "--type", "yaml"
+	)
+	if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+		// On Windows gradle can not find the npx executable, even if it is in the PATH,
+		// however the "cmd" executable can find npx.
+		command = arrayOf("cmd", "/C", *command)
+	}
+	commandLine(*command)
+}
 
 tasks.register<Delete>("cleanOpenApiOutputDir") {
-	group = "build"
-	description = "Delete generated OpenAPI sources"
-	delete(openApiOutputDirPath.get().asFile)
+	description = "Delete generated code from OpenAPI files."
+	group = tasks.openApiGenerate.get().group
+	delete(openApiOutputDirPath.get().toString())
 }
 
-tasks.register<Delete>("cleanEmailOpenApiOutputDir") {
-	group = "build"
-	description = "Delete generated email OpenAPI sources"
-	delete(emailOpenApiOutputDirPath.get().asFile)
-}
+// ============================= OPENAPI GENERATION =============================
 
 tasks.openApiGenerate {
 
-	dependsOn(tasks.named("cleanOpenApiOutputDir"))
+	dependsOn(bundleOpenApi, tasks.named("cleanOpenApiOutputDir"))
 
-	inputSpec.set("$rootDir/src/main/resources/static/openapi.yml")
+	inputSpec.set("$openApiStaticDir/openapi.yml")
 	outputDir.set(openApiOutputDirPath.get().asFile.absolutePath)
 
 	packageName.set(rootProject.name)
@@ -152,49 +168,12 @@ tasks.openApiGenerate {
 	)
 }
 
-val openApiGenerateEmailTask = tasks.register<GenerateTask>("openApiGenerateEmail") {
-
-	dependsOn(tasks.named("cleanEmailOpenApiOutputDir"))
-
-	inputSpec.set("$rootDir/src/main/resources/static/email-openapi.yml")
-	outputDir.set(emailOpenApiOutputDirPath.get().asFile.absolutePath)
-
-	packageName.set(rootProject.name)
-	invokerPackage.set("${rootProject.name}.security")
-	apiPackage.set("${rootProject.name}.api")
-	modelPackage.set("${rootProject.name}.model")
-	modelNameSuffix.set("Dto")
-	generatorName.set("kotlin-spring")
-
-	configOptions.set(
-		mapOf(
-			"useSpringBoot3" to "true",
-			"delegatePattern" to "true",
-			"interfaceOnly" to "true",
-			"dateLibrary" to "java8",
-			"useTags" to "true",
-			"enumPropertyNaming" to "UPPERCASE"
-		)
-	)
-
-	// Remove files that are already provided by the main openApiGenerate task
-	// to avoid duplicate class definitions in the combined source set.
-	doLast {
-		val outputBase = emailOpenApiOutputDirPath.get().asFile.absolutePath
-		listOf(
-			"$outputBase/src/main/kotlin/invoice/management/system/api/ApiUtil.kt",
-			"$outputBase/src/main/kotlin/invoice/management/system/api/Exceptions.kt",
-			"$outputBase/src/main/kotlin/invoice/management/system/security/SpringDocConfiguration.kt",
-		).forEach { file(it).delete() }
-	}
-}
-
 // ============================= COMPILE =============================
 
 tasks.withType<KotlinCompile> {
 
-	dependsOn(tasks.openApiGenerate, openApiGenerateEmailTask)
-	mustRunAfter(tasks.openApiGenerate, openApiGenerateEmailTask)
+	dependsOn(tasks.openApiGenerate)
+	mustRunAfter(tasks.openApiGenerate)
 
 	compilerOptions {
 		jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_23)
@@ -211,5 +190,4 @@ tasks.withType<Test> {
 sourceSets {
 	val main by getting
 	main.java.srcDir("${openApiOutputDirPath.get()}/src/main/kotlin")
-	main.java.srcDir("${emailOpenApiOutputDirPath.get()}/src/main/kotlin")
 }
