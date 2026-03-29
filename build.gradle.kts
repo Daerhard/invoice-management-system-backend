@@ -71,6 +71,9 @@ dependencies {
 	runtimeOnly("com.mysql:mysql-connector-j:9.2.0")
 	runtimeOnly("com.h2database:h2:2.3.232")
 
+	// ================= EMAIL =================
+	implementation("org.springframework.boot:spring-boot-starter-mail")
+
 	// ================= DEV =================
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 
