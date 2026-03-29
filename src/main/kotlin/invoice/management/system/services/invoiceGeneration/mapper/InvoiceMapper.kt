@@ -9,4 +9,5 @@ fun Invoice.toDto(): InvoiceDto = InvoiceDto(
     orderId = this.order.externalOrderId,
     createdAt = this.createdAt.atOffset(ZoneOffset.UTC),
     invoicePdf = this.invoicePdf,
+    sent = this.sentAt != null,
 )
