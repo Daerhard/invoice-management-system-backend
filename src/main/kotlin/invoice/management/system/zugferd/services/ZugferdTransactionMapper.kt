@@ -24,7 +24,13 @@ object ZugferdTransactionMapper {
 
         val buyer = order.customer
         val buyerCountryCode = resolveCountryCode(buyer.country)
-        val buyerParty = TradeParty(buyer.fullName, buyer.street, "", buyer.city, buyerCountryCode)
+        val buyerParty = TradeParty(
+            buyer.fullName,
+            buyer.street,
+            "", // ZIP code is not stored per Cardmarket customer data
+            buyer.city,
+            buyerCountryCode,
+        )
         if (buyer.vatNumber != null) {
             buyerParty.addVATID(buyer.vatNumber)
         }
@@ -75,6 +81,9 @@ object ZugferdTransactionMapper {
             "CZECH REPUBLIC" -> "CZ"
             "UK", "GREAT BRITAIN" -> "GB"
             "USA", "UNITED STATES" -> "US"
+            // For short codes (ISO 3166-1 alpha-2) pass through as-is;
+            // fall back to "DE" (Germany) when the country cannot be resolved,
+            // matching the seller's default country and the primary market served.
             else -> if (country.length == 2) country.uppercase() else "DE"
         }
     }

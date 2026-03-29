@@ -17,8 +17,6 @@ import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
-import org.springframework.http.HttpStatus
-import java.util.Optional
 
 @Suppress("UNCHECKED_CAST")
 private fun <T> anyNonNull(): T = Mockito.any<T>() as T

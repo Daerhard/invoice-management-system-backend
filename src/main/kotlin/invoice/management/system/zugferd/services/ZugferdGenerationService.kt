@@ -3,21 +3,21 @@ package invoice.management.system.zugferd.services
 import invoice.management.system.entities.CardmarketOrder
 import mu.KotlinLogging
 import org.mustangproject.ZUGFeRD.ZUGFeRDExporterFromA3
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.io.ByteArrayOutputStream
 
 private val logger = KotlinLogging.logger {}
 
 @Service
-class ZugferdGenerationService {
-
-    // Seller data – replace with database-backed user data once authentication is implemented
-    private val sellerName = "Daniel Erhard"
-    private val sellerStreet = "Thomas-Morus-Str. 2"
-    private val sellerZip = "86916"
-    private val sellerCity = "Kaufering"
-    private val sellerCountry = "DE"
-    private val sellerTaxId = "DE123456789"
+class ZugferdGenerationService(
+    @Value("\${seller.name}") private val sellerName: String,
+    @Value("\${seller.street}") private val sellerStreet: String,
+    @Value("\${seller.zip}") private val sellerZip: String,
+    @Value("\${seller.city}") private val sellerCity: String,
+    @Value("\${seller.country}") private val sellerCountry: String,
+    @Value("\${seller.tax-id}") private val sellerTaxId: String,
+) {
 
     fun generateZugferdInvoice(cardmarketOrder: CardmarketOrder, pdfBytes: ByteArray): ByteArray {
         logger.info { "Generating ZUGFeRD invoice for order ${cardmarketOrder.externalOrderId}" }
