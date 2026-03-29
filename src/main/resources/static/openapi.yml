@@ -755,10 +755,14 @@ components:
           format: byte
           nullable: true
           description: PDF content of the invoice as a base64-encoded byte array.
+        sent:
+          type: boolean
+          description: Indicates whether the invoice has been sent to the customer.
       required:
         - id
         - orderId
         - createdAt
+        - sent
     emailSendRequest:
       type: object
       description: Request body for sending a generic email.

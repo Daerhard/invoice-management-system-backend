@@ -35,10 +35,16 @@ services:
     depends_on:
       - mysql
       - flyway
+    env_file:
+      - .env
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}?useSSL=false&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: ${DATABASE_USER}
       SPRING_DATASOURCE_PASSWORD: ${DATABASE_PASSWORD}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USERNAME: ${SMTP_USERNAME}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
     ports:
       - "8080:8080" # Maps Spring Boot app port
     volumes:

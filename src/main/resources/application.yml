@@ -1,4 +1,7 @@
 spring:
+  config:
+    # Load local .env (KEY=VALUE) when present; keeps CI/container behavior unchanged.
+    import: optional:file:.env[.properties]
   jpa:
     show-sql: true
     properties:
@@ -63,3 +66,9 @@ server:
 
 email:
   from: '${SMTP_USERNAME:}'
+  imap:
+    host: '${IMAP_HOST:imap.gmx.net}'
+    port: ${IMAP_PORT:993}
+    username: '${IMAP_USERNAME:${SMTP_USERNAME:}}'
+    password: '${IMAP_PASSWORD:${SMTP_PASSWORD:}}'
+    sent-folder: '${IMAP_SENT_FOLDER:Gesendet}'
