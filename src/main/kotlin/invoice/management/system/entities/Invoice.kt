@@ -19,7 +19,7 @@ data class Invoice(
     val invoicePdf: ByteArray? = null,
 
     @Column(name = "sent_at")
-    val sentAt: Instant? = null,
+    var sentAt: Instant? = null,
 ) {
 
     @Id

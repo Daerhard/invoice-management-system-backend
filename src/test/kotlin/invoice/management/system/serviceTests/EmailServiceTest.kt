@@ -1,9 +1,9 @@
 package invoice.management.system.serviceTests
 
-import invoice.management.system.services.email.EmailAttachment
-import invoice.management.system.services.email.EmailRequest
-import invoice.management.system.services.email.EmailSendException
-import invoice.management.system.services.email.EmailService
+import invoice.management.system.mailSystem.entities.EmailAttachment
+import invoice.management.system.mailSystem.services.EmailRequest
+import invoice.management.system.mailSystem.entities.EmailSendException
+import invoice.management.system.mailSystem.services.EmailService
 import jakarta.mail.Session
 import jakarta.mail.internet.MimeMessage
 import jakarta.mail.internet.MimeMultipart

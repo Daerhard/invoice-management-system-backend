@@ -1,21 +1,4 @@
-package invoice.management.system.services.email
-
-/**
- * Encapsulates all parameters needed to compose and send an e-mail.
- *
- * @property to         Recipient e-mail address.
- * @property subject    Subject line of the e-mail.
- * @property body       Body content; treated as plain text when [isHtml] is `false`, as HTML when `true`.
- * @property isHtml     When `true` the [body] is treated as HTML; defaults to `false`.
- * @property attachments Zero or more [EmailAttachment] instances to include in the mail.
- */
-data class EmailRequest(
-    val to: String,
-    val subject: String,
-    val body: String,
-    val isHtml: Boolean = false,
-    val attachments: List<EmailAttachment> = emptyList(),
-)
+package invoice.management.system.mailSystem.entities
 
 /**
  * Represents a single file attachment.

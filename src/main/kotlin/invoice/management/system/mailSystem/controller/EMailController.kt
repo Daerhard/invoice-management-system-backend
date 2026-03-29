@@ -1,4 +1,4 @@
-package invoice.management.system.controller
+package invoice.management.system.mailSystem.controller
 
 import invoice.management.system.api.EmailApi
 import invoice.management.system.api.EmailApiDelegate
@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 
 @Controller
 @RequestMapping("\${openapi.invoice-management-system.base-path:}")
-class EmailController(
+class EMailController(
     @Autowired private val delegate: EmailApiDelegate
 ) : EmailApi {
 

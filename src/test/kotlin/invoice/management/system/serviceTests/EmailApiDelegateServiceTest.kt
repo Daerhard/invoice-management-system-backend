@@ -2,17 +2,16 @@ package invoice.management.system.serviceTests
 
 import invoice.management.system.model.EmailSendRequestDto
 import invoice.management.system.model.InvoiceEmailRequestDto
-import invoice.management.system.services.email.EmailApiDelegateService
-import invoice.management.system.services.email.EmailRequest
-import invoice.management.system.services.email.EmailSendException
-import invoice.management.system.services.email.EmailService
-import invoice.management.system.services.email.InvoiceEmailWorkflowResult
-import invoice.management.system.services.email.InvoiceEmailWorkflowService
+import invoice.management.system.mailSystem.services.EmailApiDelegateService
+import invoice.management.system.mailSystem.services.EmailRequest
+import invoice.management.system.mailSystem.entities.EmailSendException
+import invoice.management.system.mailSystem.services.EmailService
+import invoice.management.system.mailSystem.services.InvoiceEmailWorkflowResult
+import invoice.management.system.mailSystem.services.InvoiceEmailWorkflowService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
-import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.springframework.http.HttpStatus

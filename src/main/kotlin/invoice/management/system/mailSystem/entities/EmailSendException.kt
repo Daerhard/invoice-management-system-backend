@@ -1,4 +1,4 @@
-package invoice.management.system.services.email
+package invoice.management.system.mailSystem.entities
 
 /**
  * Thrown by [EmailService] when an e-mail cannot be sent.
