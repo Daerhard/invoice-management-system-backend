@@ -61,4 +61,33 @@ class InvoiceRepositoryTest : RepositoryTest() {
         assertNotNull(fetchedInvoice)
         assertNull(fetchedInvoice?.invoicePdf)
     }
+
+    @Test
+    fun whenSaveInvoiceWithSentAt_thenSentAtIsPersistedCorrectly() {
+        val customer = entityManager.persist(createCustomer())
+        val order = entityManager.persist(createCardmarketOrder(customer = customer))
+        val sentAt = Instant.now().truncatedTo(ChronoUnit.SECONDS)
+        val invoice = createInvoice(order = order, sentAt = sentAt)
+        invoiceRepository.save(invoice)
+        entityManager.flushAndClear()
+
+        val fetchedInvoice = invoiceRepository.findByOrder(order)
+
+        assertNotNull(fetchedInvoice)
+        assertEquals(sentAt, fetchedInvoice?.sentAt)
+    }
+
+    @Test
+    fun whenSaveInvoiceWithoutSentAt_thenSentAtIsNull() {
+        val customer = entityManager.persist(createCustomer())
+        val order = entityManager.persist(createCardmarketOrder(customer = customer))
+        val invoice = createInvoice(order = order)
+        invoiceRepository.save(invoice)
+        entityManager.flushAndClear()
+
+        val fetchedInvoice = invoiceRepository.findByOrder(order)
+
+        assertNotNull(fetchedInvoice)
+        assertNull(fetchedInvoice?.sentAt)
+    }
 }

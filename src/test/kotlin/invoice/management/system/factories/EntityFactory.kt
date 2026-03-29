@@ -96,10 +96,12 @@ class EntityFactory {
             order: CardmarketOrder = createCardmarketOrder(),
             createdAt: Instant = Instant.now(),
             invoicePdf: ByteArray? = null,
+            sentAt: Instant? = null,
         ) = Invoice(
             order = order,
             createdAt = createdAt,
             invoicePdf = invoicePdf,
+            sentAt = sentAt,
         )
 
         fun createUser(

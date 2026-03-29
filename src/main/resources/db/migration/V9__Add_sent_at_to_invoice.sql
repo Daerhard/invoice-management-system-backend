@@ -1,0 +1,2 @@
+ALTER TABLE invoice
+    ADD COLUMN sent_at DATETIME NULL;

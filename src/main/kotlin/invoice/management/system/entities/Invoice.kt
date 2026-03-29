@@ -17,6 +17,9 @@ data class Invoice(
     @Lob
     @Column(name = "invoice_pdf")
     val invoicePdf: ByteArray? = null,
+
+    @Column(name = "sent_at")
+    val sentAt: Instant? = null,
 ) {
 
     @Id
