@@ -1,18 +1,23 @@
 package invoice.management.system.serviceTests
 
+import invoice.management.system.entities.Invoice
 import invoice.management.system.factories.EntityFactory.Companion.createCardmarketOrder
 import invoice.management.system.factories.EntityFactory.Companion.createCustomer
+import invoice.management.system.factories.EntityFactory.Companion.createInvoice
 import invoice.management.system.model.EmailSendRequestDto
 import invoice.management.system.model.EmailSendResponseDto
 import invoice.management.system.model.InvoiceEmailRequestDto
 import invoice.management.system.repositories.CardmarketOrderRepository
+import invoice.management.system.repositories.InvoiceRepository
 import invoice.management.system.services.email.EmailApiDelegateService
 import invoice.management.system.services.email.EmailRequest
 import invoice.management.system.services.email.EmailSendException
 import invoice.management.system.services.email.EmailService
 import invoice.management.system.services.invoiceGeneration.pdfGeneration.InvoicePDFGenerationService
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
+import org.mockito.ArgumentCaptor
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
@@ -38,11 +43,13 @@ class EmailApiDelegateServiceTest {
         mock(InvoicePDFGenerationService::class.java)
     private val cardmarketOrderRepository: CardmarketOrderRepository =
         mock(CardmarketOrderRepository::class.java)
+    private val invoiceRepository: InvoiceRepository = mock(InvoiceRepository::class.java)
 
     private val service = EmailApiDelegateService(
         emailService,
         invoicePDFGenerationService,
         cardmarketOrderRepository,
+        invoiceRepository,
     )
 
     // ========================== sendEmail ==========================
@@ -90,6 +97,22 @@ class EmailApiDelegateServiceTest {
 
         assertEquals(HttpStatus.OK, response.statusCode)
         verify(emailService).sendEmail(anyNonNull())
+    }
+
+    @Test
+    fun whenSendInvoiceEmail_withExistingInvoice_thenSentAtIsUpdated() {
+        val customer = createCustomer(email = "customer@example.com")
+        val order = createCardmarketOrder(orderId = 42L, customer = customer)
+        val invoice = createInvoice(order = order)
+        `when`(cardmarketOrderRepository.findByExternalOrderId(42L)).thenReturn(order)
+        `when`(invoicePDFGenerationService.generateInvoicePdf(order)).thenReturn("PDF".toByteArray())
+        `when`(invoiceRepository.findByOrder(order)).thenReturn(invoice)
+
+        service.sendInvoiceEmail(42L, null)
+
+        val captor = ArgumentCaptor.forClass(Invoice::class.java)
+        verify(invoiceRepository).save(captor.capture())
+        assertNotNull(captor.value.sentAt)
     }
 
     @Test
