@@ -2,10 +2,10 @@ openapi: 3.0.1
 info:
   title: Invoice Management System – Complete API
   description: |
-    Master specification that combines all services of the Invoice Management System into a single OpenAPI document. The combined openapi.yml is generated from this master file by the Gradle task 'mergeOpenApiSpecs'. Do not edit openapi.yml directly; edit the individual service specs instead.
-  version: 1.0.0
+    Master specification that combines all services of the Invoice Management System into a single OpenAPI document. The combined openapi.yml is generated from this master file by the Gradle task 'bundleOpenApi'. Do not edit openapi.yml directly; edit the individual service specs instead.
+  version: 2.0.0
 servers:
-  - url: http://localhost:8080/invoice-management-system/api/
+  - url: 'http://localhost:8080/invoice-management-system/api/'
     description: local server
 paths:
   /v1/customers:
@@ -48,7 +48,7 @@ paths:
           description: invalid user id supplied in authentication token
         '401':
           description: not authenticated
-  /v1/customers/{userName}/email:
+  '/v1/customers/{userName}/email':
     patch:
       tags:
         - customers
@@ -75,10 +75,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/customer'
-        '404':
-          description: customer not found
         '400':
           description: invalid input
+        '404':
+          description: customer not found
   /v1/import:
     post:
       tags:
@@ -116,13 +116,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/responseMessage'
-  /v1/generateInvoicePDF/{cardmarketExternalOrderId}:
+  '/v1/generateInvoicePDF/{cardmarketExternalOrderId}':
     get:
       tags:
         - InvoiceGenerationPDF
       summary: Generate and save an invoice in pdf format
-      description: Generate an invoice in pdf format and returns it for saving on
-        the client's machine.
+      description: Generate an invoice in pdf format and returns it for saving on the client's machine.
       operationId: getInvoicePDF
       parameters:
         - name: cardmarketExternalOrderId
@@ -150,13 +149,12 @@ paths:
                   message:
                     type: string
                     example: Internal server error occurred while generating the PDF.
-  /v1/generateInvoicesPDF/{startDate}/{endDate}:
+  '/v1/generateInvoicesPDF/{startDate}/{endDate}':
     get:
       tags:
         - InvoiceGenerationPDF
       summary: Download invoices as a ZIP file
-      description: Generates multiple invoices in PDF format and compresses them into
-        a ZIP file.
+      description: Generates multiple invoices in PDF format and compresses them into a ZIP file.
       operationId: getInvoicesPDF
       parameters:
         - name: startDate
@@ -181,13 +179,12 @@ paths:
               schema:
                 type: string
                 format: byte
-  /v1/generateInvoiceZUGFeRD/{cardmarketExternalOrderId}:
+  '/v1/generateInvoiceZUGFeRD/{cardmarketExternalOrderId}':
     get:
       tags:
         - InvoiceGenerationZUGFeRD
       summary: Generate and save an invoice in ZUGFeRD format
-      description: Generate an invoice in ZUGFeRD format and returns it for saving
-        on the client's machine.
+      description: Generate an invoice in ZUGFeRD format and returns it for saving on the client's machine.
       operationId: getInvoiceZUGFeRD
       parameters:
         - name: cardmarketExternalOrderId
@@ -235,13 +232,65 @@ paths:
           description: invalid user id supplied in authentication token
         '401':
           description: not authenticated
+  '/v1/orders/{userName}':
+    get:
+      tags:
+        - orders
+      summary: get all orders by user name
+      description: returns all orders by user name
+      operationId: getOrdersByUserName
+      parameters:
+        - name: userName
+          in: path
+          required: true
+          description: The username for which to retrieve orders.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/cardmarketOrder'
+        '400':
+          description: invalid user id supplied in authentication token
+        '401':
+          description: not authenticated
+  '/v1/orders/{externalOrderId}/invoice':
+    post:
+      tags:
+        - orders
+      summary: Create and persist an invoice for an order
+      description: 'Generates a PDF invoice for the given order, persists it in the database, and returns the invoice data. Returns 409 if an invoice already exists for this order.'
+      operationId: createInvoice
+      parameters:
+        - name: externalOrderId
+          in: path
+          required: true
+          description: The external order id.
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '201':
+          description: Invoice created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/invoice'
+        '404':
+          description: Order not found.
+        '409':
+          description: Invoice already exists for this order.
   /v1/purchase-invoices:
     post:
       tags:
         - PurchaseInvoices
       summary: Create a new purchase invoice with PDF upload
-      description: Accepts structured invoice data and a PDF file and stores them
-        separately.
+      description: Accepts structured invoice data and a PDF file and stores them separately.
       operationId: createPurchaseInvoice
       requestBody:
         required: true
@@ -291,7 +340,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/purchaseInvoice'
-  /v1/purchase-invoices/{id}/pdf:
+  '/v1/purchase-invoices/{id}/pdf':
     get:
       tags:
         - PurchaseInvoices
@@ -314,33 +363,6 @@ paths:
                 format: binary
         '404':
           description: PDF not found
-  /v1/orders/{userName}:
-    get:
-      tags:
-        - orders
-      summary: get all orders by user name
-      description: returns all orders by user name
-      operationId: getOrdersByUserName
-      parameters:
-        - name: userName
-          in: path
-          required: true
-          description: The username for which to retrieve orders.
-          schema:
-            type: string
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/cardmarketOrder'
-        '400':
-          description: invalid user id supplied in authentication token
-        '401':
-          description: not authenticated
   /v1/users:
     post:
       tags:
@@ -378,7 +400,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/user'
-  /v1/users/{id}:
+  '/v1/users/{id}':
     get:
       tags:
         - users
@@ -401,34 +423,6 @@ paths:
                 $ref: '#/components/schemas/user'
         '404':
           description: User not found.
-  /v1/orders/{externalOrderId}/invoice:
-    post:
-      tags:
-        - orders
-      summary: Create and persist an invoice for an order
-      description: Generates a PDF invoice for the given order, persists it in the
-        database, and returns the invoice data. Returns 409 if an invoice already
-        exists for this order.
-      operationId: createInvoice
-      parameters:
-        - name: externalOrderId
-          in: path
-          required: true
-          description: The external order id.
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '201':
-          description: Invoice created successfully.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/invoice'
-        '404':
-          description: Order not found.
-        '409':
-          description: Invoice already exists for this order.
   /v1/email/send:
     post:
       tags:
@@ -461,7 +455,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/emailSendResponse'
-  /v1/email/invoice/{orderId}:
+  '/v1/email/invoice/{orderId}':
     post:
       tags:
         - email
@@ -606,8 +600,7 @@ components:
         total_value:
           type: number
           format: double
-          description: Total value of the order, including merchandise and shipment
-            costs.
+          description: 'Total value of the order, including merchandise and shipment costs.'
         commission:
           type: number
           format: double
@@ -652,7 +645,7 @@ components:
           description: Number of items in the order.
         condition:
           type: string
-          description: Condition of the item (e.g., new, used).
+          description: 'Condition of the item (e.g., new, used).'
         price:
           type: number
           format: double
@@ -740,8 +733,7 @@ components:
       properties:
         message:
           type: string
-          example: CSV schema validation failed. / CSV file import was successful.
-            / Internal Server Error.
+          example: CSV schema validation failed. / CSV file import was successful. / Internal Server Error.
     invoice:
       type: object
       description: Invoice associated with an order.
@@ -783,7 +775,7 @@ components:
           type: string
           description: |
             Body content of the email. Treated as plain text when isHtml is false, as HTML when isHtml is true.
-          example: Dear customer, please find your invoice attached.
+          example: 'Dear customer, please find your invoice attached.'
         isHtml:
           type: boolean
           description: When true the body is treated as HTML.

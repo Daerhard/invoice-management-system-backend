@@ -5,7 +5,7 @@ info:
     Master specification that combines all services of the Invoice Management
     System into a single OpenAPI document.
     The combined openapi.yml is generated from this master file by the Gradle
-    task 'mergeOpenApiSpecs'. Do not edit openapi.yml directly; edit the
+    task 'bundleOpenApi'. Do not edit openapi.yml directly; edit the
     individual service specs instead.
   version: 2.0.0
 
@@ -15,37 +15,69 @@ servers:
 
 paths:
   # Invoice-Management-System
-  /v1/shift_groups:
-    $ref: "./openapi_workplace_priorities.yaml#/paths/~1v1~1shift_groups"
-  /v1/shift_group/{shiftGroupId}/priority_profile_items:
-    $ref: "./openapi_workplace_priorities.yaml#/paths/~1v1~1shift_group~1{shiftGroupId}~1priority_profile_items"
-  /v1/shift_group/{shiftGroupId}/priority_profiles:
-    $ref: "./openapi_workplace_priorities.yaml#/paths/~1v1~1shift_group~1{shiftGroupId}~1priority_profiles"
-  /v1/shift_group/{shiftGroupId}/priority_profile/{profileId}:
-    $ref: "./openapi_workplace_priorities.yaml#/paths/~1v1~1shift_group~1{shiftGroupId}~1priority_profile~1{profileId}"
-  /v1/shift_group/{shiftGroupId}/priority_profiles/by_date/{date}:
-    $ref: "./openapi_workplace_priorities.yaml#/paths/~1v1~1shift_group~1{shiftGroupId}~1priority_profiles~1by_date~1{date}"
-  /v1/shift_group/{shiftGroupId}/priority_profiles/by_date/for_automatic_planning/{date}:
-    $ref: "./openapi_workplace_priorities.yaml#/paths/~1v1~1shift_group~1{shiftGroupId}~1priority_profiles~1by_date~1for_automatic_planning~1{date}"
-  /v1/shift_group/{shiftGroupId}/report_xlsx:
-    $ref: "./openapi_workplace_priorities.yaml#/paths/~1v1~1shift_group~1{shiftGroupId}~1report_xlsx"
+  /v1/customers:
+    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1customers"
+  /v1/customers/professional:
+    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1customers~1professional"
+  /v1/customers/{userName}/email:
+    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1customers~1{userName}~1email"
+  /v1/import:
+    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1import"
+  /v1/generateInvoicePDF/{cardmarketExternalOrderId}:
+    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1generateInvoicePDF~1{cardmarketExternalOrderId}"
+  /v1/generateInvoicesPDF/{startDate}/{endDate}:
+    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1generateInvoicesPDF~1{startDate}~1{endDate}"
+  /v1/generateInvoiceZUGFeRD/{cardmarketExternalOrderId}:
+    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1generateInvoiceZUGFeRD~1{cardmarketExternalOrderId}"
+  /v1/orders:
+    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1orders"
+  /v1/orders/{userName}:
+    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1orders~1{userName}"
+  /v1/orders/{externalOrderId}/invoice:
+    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1orders~1{externalOrderId}~1invoice"
+  /v1/purchase-invoices:
+    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1purchase-invoices"
+  /v1/purchase-invoices/{id}/pdf:
+    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1purchase-invoices~1{id}~1pdf"
+  /v1/users:
+    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1users"
+  /v1/users/{id}:
+    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1users~1{id}"
 
-    # E-Mail-System
-  /v1/shift_group/{shiftGroupId}/planning_template:
-    $ref: "./openapi_planning_template.yaml#/paths/~1v1~1shift_group~1{shiftGroupId}~1planning_template"
+  # E-Mail-Service
+  /v1/email/send:
+    $ref: "./openapi_e-mail_service.yml#/paths/~1v1~1email~1send"
+  /v1/email/invoice/{orderId}:
+    $ref: "./openapi_e-mail_service.yml#/paths/~1v1~1email~1invoice~1{orderId}"
 
 components:
   schemas:
     # Invoice-Management-System
-    shift_group:
-      $ref: "./openapi_workplace_priorities.yaml#/components/schemas/shift_group"
-    priority_profile_item:
-      $ref: "./openapi_workplace_priorities.yaml#/components/schemas/priority_profile_item"
-    priority_profile:
-      $ref: "./openapi_workplace_priorities.yaml#/components/schemas/priority_profile"
-    workplace_priority:
-      $ref: "./openapi_workplace_priorities.yaml#/components/schemas/workplace_priority"
+    user:
+      $ref: "./openapi_invoice_management_system.yml#/components/schemas/user"
+    customer:
+      $ref: "./openapi_invoice_management_system.yml#/components/schemas/customer"
+    emailUpdate:
+      $ref: "./openapi_invoice_management_system.yml#/components/schemas/emailUpdate"
+    cardmarketOrder:
+      $ref: "./openapi_invoice_management_system.yml#/components/schemas/cardmarketOrder"
+    orderItem:
+      $ref: "./openapi_invoice_management_system.yml#/components/schemas/orderItem"
+    card:
+      $ref: "./openapi_invoice_management_system.yml#/components/schemas/card"
+    cardId:
+      $ref: "./openapi_invoice_management_system.yml#/components/schemas/cardId"
+    purchaseInvoice:
+      $ref: "./openapi_invoice_management_system.yml#/components/schemas/purchaseInvoice"
+    responseMessage:
+      $ref: "./openapi_invoice_management_system.yml#/components/schemas/responseMessage"
+    invoice:
+      $ref: "./openapi_invoice_management_system.yml#/components/schemas/invoice"
 
-    # E-Mail-System
-    planning_template:
-      $ref: "./openapi_planning_template.yaml#/components/schemas/planning_template"
+    # E-Mail-Service
+    emailSendRequest:
+      $ref: "./openapi_e-mail_service.yml#/components/schemas/emailSendRequest"
+    invoiceEmailRequest:
+      $ref: "./openapi_e-mail_service.yml#/components/schemas/invoiceEmailRequest"
+    emailSendResponse:
+      $ref: "./openapi_e-mail_service.yml#/components/schemas/emailSendResponse"

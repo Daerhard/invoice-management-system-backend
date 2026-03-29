@@ -122,16 +122,16 @@ val openApiOutputDirPath =
 	project.layout.buildDirectory.dir("generated_sources/openAPI")
 
 val bundleOpenApi by tasks.registering(Exec::class) {
-	var command = arrayOf(
-		"npx", "swagger-cli", "bundle", "src/main/resources/static/openapiSpecs/master_openapi.yaml",
-		"--outfile", "src/main/resources/static/openapi.yml", "--type", "yaml"
-	)
+	val npxCommand = "npx swagger-cli bundle src/main/resources/static/openapi_master.yml" +
+			" --outfile src/main/resources/static/openapi.yml --type yaml"
 	if (Os.isFamily(Os.FAMILY_WINDOWS)) {
 		// On Windows gradle can not find the npx executable, even if it is in the PATH,
 		// however the "cmd" executable can find npx.
-		command = arrayOf("cmd", "/C", *command)
+		commandLine("cmd", "/C", npxCommand)
+	} else {
+		// Use sh -c so the shell resolves npx from PATH (e.g. nvm, Homebrew)
+		commandLine("sh", "-c", npxCommand)
 	}
-	commandLine(*command)
 }
 
 tasks.register<Delete>("cleanOpenApiOutputDir") {
