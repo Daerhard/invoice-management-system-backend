@@ -349,6 +349,69 @@ paths:
         '401':
           description: not authenticated
 
+  /v1/users:
+    post:
+      tags:
+        - users
+      summary: Create a new user
+      description: Persists a new user in the database and returns the created user.
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/user'
+      responses:
+        '201':
+          description: User created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user'
+        '400':
+          description: Invalid input.
+
+    get:
+      tags:
+        - users
+      summary: Get all users
+      description: Returns a list of all users.
+      operationId: getAllUsers
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/user'
+
+  /v1/users/{id}:
+    get:
+      tags:
+        - users
+      summary: Get user by id
+      description: Returns a single user by its id.
+      operationId: getUserById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user'
+        '404':
+          description: User not found.
+
   /v1/orders/{externalOrderId}/invoice:
     post:
       tags:
@@ -378,6 +441,49 @@ paths:
 
 components:
   schemas:
+    user:
+      type: object
+      description: user object
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: Unique identifier for the user.
+        username:
+          type: string
+          description: Username of the user.
+        password:
+          type: string
+          description: Password of the user.
+          writeOnly: true
+          nullable: true
+        firstName:
+          type: string
+          description: First name of the user.
+        lastName:
+          type: string
+          description: Last name of the user.
+        zipCode:
+          type: string
+          description: ZIP code of the user's address.
+        city:
+          type: string
+          description: City of the user's address.
+        street:
+          type: string
+          description: Street of the user's address.
+        email:
+          type: string
+          description: Email address of the user.
+      required:
+        - username
+        - firstName
+        - lastName
+        - zipCode
+        - city
+        - street
+        - email
+
     customer:
       type: object
       description: customer object
