@@ -99,7 +99,7 @@ class EmailApiDelegateService(
             )
             invoiceRepository.findByOrder(order)?.let { invoice ->
                 try {
-                    invoiceRepository.save(invoice.copy(sentAt = Instant.now()))
+                    invoiceRepository.save(invoice.copy(sentAt = invoice.sentAt ?: Instant.now()))
                 } catch (ex: Exception) {
                     logger.error(ex) { "Failed to update sentAt for invoice of order $orderId" }
                 }
