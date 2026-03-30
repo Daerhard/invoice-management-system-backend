@@ -6,6 +6,7 @@ import invoice.management.system.mailSystem.entities.EmailAttachment
 import invoice.management.system.mailSystem.entities.EmailSendException
 import invoice.management.system.model.EmailSendResponseDto
 import invoice.management.system.repositories.InvoiceRepository
+import invoice.management.system.repositories.UserRepository
 import jakarta.mail.MessagingException
 import mu.KotlinLogging
 import org.springframework.http.HttpStatus
@@ -22,6 +23,7 @@ private val logger = KotlinLogging.logger {}
 @Service
 class EMailServiceManager(
     private val invoiceRepository: InvoiceRepository,
+    private val userRepository: UserRepository,
     private val mailSender: JavaMailSender
 ) {
 
@@ -42,6 +44,9 @@ class EMailServiceManager(
     fun sendEmail(invoice: Invoice) {
         val receiver = invoice.order.customer.email.takeIf { it != null }
             ?: throw IllegalArgumentException("Customer has no email address.")
+        val user = userRepository.findAll().first().takeIf { it != null }
+                ?: throw IllegalStateException("No sender user found in the database.")
+        val sender = user.email
 
         logger.info { "Sending email to $receiver for Bestellnummer '${invoice.order.externalOrderId}" }
 
@@ -51,7 +56,7 @@ class EMailServiceManager(
             val message = mailSender.createMimeMessage()
             val helper = MimeMessageHelper(message, true, "UTF-8")
 
-            helper.setFrom(receiver)
+            helper.setFrom(sender)
             helper.setTo(receiver)
             helper.setSubject(defaultEmail.subject)
             helper.setText(defaultEmail.body, false)
