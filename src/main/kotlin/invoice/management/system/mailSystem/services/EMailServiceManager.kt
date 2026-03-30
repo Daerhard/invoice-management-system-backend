@@ -40,9 +40,8 @@ class EMailServiceManager(
     }
 
     fun sendEmail(invoice: Invoice) {
-        //toDo: wire it up
-        // invoice.order.customer.email
-        val receiver = "erhard-daniel-gew@gmx.de"
+        val receiver = invoice.order.customer.email
+            ?: throw IllegalArgumentException("Customer has no email address.")
         logger.info { "Sending email to $receiver for Bestellnummer '${invoice.order.externalOrderId}" }
 
         val defaultEmail = getDefaultEmail(invoice)
@@ -51,7 +50,6 @@ class EMailServiceManager(
             val message = mailSender.createMimeMessage()
             val helper = MimeMessageHelper(message, true, "UTF-8")
 
-            helper.setFrom(receiver)
             helper.setTo(receiver)
             helper.setSubject(defaultEmail.subject)
             helper.setText(defaultEmail.body, false)
