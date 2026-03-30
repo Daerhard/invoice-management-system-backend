@@ -66,3 +66,8 @@ server:
 
 email:
   from: '${SMTP_USERNAME:}'
+
+imap:
+  host: '${IMAP_HOST:imap.gmx.net}'
+  port: ${IMAP_PORT:993}
+  sent-folder: '${IMAP_SENT_FOLDER:Gesendet}'
