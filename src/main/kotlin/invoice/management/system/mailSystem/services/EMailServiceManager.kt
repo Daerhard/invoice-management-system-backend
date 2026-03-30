@@ -27,7 +27,7 @@ class EMailServiceManager(
 
     fun getInvoice(orderId: Long): Invoice {
         return invoiceRepository.findByOrderExternalOrderId(orderId)
-         ?: throw NotFoundException("Invoice for order with id $orderId not found.")
+            ?: throw NotFoundException("Invoice for order with id $orderId not found.")
     }
 
     fun updateSentAt(invoice: Invoice): Invoice {
@@ -36,14 +36,13 @@ class EMailServiceManager(
     }
 
     fun setResponseMessage(message: String): ResponseEntity<EmailSendResponseDto> {
-        return ResponseEntity(EmailSendResponseDto(message),HttpStatus.OK)
+        return ResponseEntity(EmailSendResponseDto(message), HttpStatus.OK)
     }
 
     fun sendEmail(invoice: Invoice) {
-        //toDo: wire it up
-        // invoice.order.customer.email
-        val receiver = "erhard-daniel-gew@gmx.de"
-        logger.info { "Sending email to $receiver for Bestellnummer '${invoice.order.externalOrderId}" }
+        // toDo: wire it up with customer email
+        val receiver = invoice.order.customer.email ?: "erhard-daniel-gew@gmx.de"
+        logger.info { "Sending email to $receiver for Bestellnummer '${invoice.order.externalOrderId}'" }
 
         val defaultEmail = getDefaultEmail(invoice)
 
@@ -78,9 +77,7 @@ class EMailServiceManager(
 
     private fun getDefaultEmail(invoice: Invoice): DefaultEmail {
         val pdfBytes = invoice.invoicePdf ?: throw IllegalArgumentException("Invoice pdf does not exist.")
-
         val subject = "Ihre Rechnung - Bestellnummer ${invoice.order.externalOrderId}"
-
         val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy")
         val order = invoice.order
         val fileName =

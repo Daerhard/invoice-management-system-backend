@@ -54,6 +54,8 @@ springdoc:
         url: /openapi_invoice_management_system.yml
       - name: email-service
         url: /openapi_e-mail_service.yml
+      - name: zugferd-service
+        url: /openapi_zugferd_service.yml
     display-request-duration: true
     groups-order: desc
     default-models-expand-depth: -1
@@ -66,3 +68,11 @@ server:
 
 email:
   from: '${SMTP_USERNAME:}'
+
+seller:
+  name: '${SELLER_NAME:Daniel Erhard}'
+  street: '${SELLER_STREET:Thomas-Morus-Str. 2}'
+  zip: '${SELLER_ZIP:86916}'
+  city: '${SELLER_CITY:Kaufering}'
+  country: '${SELLER_COUNTRY:DE}'
+  tax-id: '${SELLER_TAX_ID:DE123456789}'

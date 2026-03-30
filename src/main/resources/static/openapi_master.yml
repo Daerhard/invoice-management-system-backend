@@ -27,8 +27,6 @@ paths:
     $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1generateInvoicePDF~1{cardmarketExternalOrderId}"
   /v1/generateInvoicesPDF/{startDate}/{endDate}:
     $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1generateInvoicesPDF~1{startDate}~1{endDate}"
-  /v1/generateInvoiceZUGFeRD/{cardmarketExternalOrderId}:
-    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1generateInvoiceZUGFeRD~1{cardmarketExternalOrderId}"
   /v1/orders:
     $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1orders"
   /v1/orders/{userName}:
@@ -49,6 +47,12 @@ paths:
     $ref: "./openapi_e-mail_service.yml#/paths/~1v1~1email~1send"
   /v1/email/invoice/{orderId}:
     $ref: "./openapi_e-mail_service.yml#/paths/~1v1~1email~1invoice~1{orderId}"
+
+  # ZUGFeRD-Service
+  /v1/invoices/zugferd/{cardmarketExternalOrderId}:
+    $ref: "./openapi_zugferd_service.yml#/paths/~1v1~1invoices~1zugferd~1{cardmarketExternalOrderId}"
+  /v1/invoices/zugferd/{id}:
+    $ref: "./openapi_zugferd_service.yml#/paths/~1v1~1invoices~1zugferd~1{id}"
 
 components:
   schemas:
@@ -81,3 +85,9 @@ components:
       $ref: "./openapi_e-mail_service.yml#/components/schemas/invoiceEmailRequest"
     emailSendResponse:
       $ref: "./openapi_e-mail_service.yml#/components/schemas/emailSendResponse"
+
+    # ZUGFeRD-Service
+    zugferdInvoice:
+      $ref: "./openapi_zugferd_service.yml#/components/schemas/zugferdInvoice"
+    zugferdErrorResponse:
+      $ref: "./openapi_zugferd_service.yml#/components/schemas/zugferdErrorResponse"

@@ -1,6 +1,5 @@
 package invoice.management.system.mailSystem.services
 
-import invoice.management.system.api.EmailApi
 import invoice.management.system.api.EmailApiDelegate
 import invoice.management.system.model.EmailSendResponseDto
 import invoice.management.system.model.InvoiceEmailRequestDto
