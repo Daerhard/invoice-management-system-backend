@@ -7,16 +7,22 @@ import invoice.management.system.mailSystem.entities.EmailSendException
 import invoice.management.system.model.EmailSendResponseDto
 import invoice.management.system.repositories.InvoiceRepository
 import invoice.management.system.repositories.UserRepository
+import jakarta.mail.Folder
 import jakarta.mail.MessagingException
+import jakarta.mail.Session
+import jakarta.mail.internet.MimeMessage
 import mu.KotlinLogging
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.mail.MailAuthenticationException
 import org.springframework.mail.MailSendException
 import org.springframework.mail.javamail.JavaMailSender
+import org.springframework.mail.javamail.JavaMailSenderImpl
 import org.springframework.mail.javamail.MimeMessageHelper
 import org.springframework.stereotype.Service
 import java.time.format.DateTimeFormatter
+import java.util.Properties
 
 private val logger = KotlinLogging.logger {}
 
@@ -24,7 +30,10 @@ private val logger = KotlinLogging.logger {}
 class EMailServiceManager(
     private val invoiceRepository: InvoiceRepository,
     private val userRepository: UserRepository,
-    private val mailSender: JavaMailSender
+    private val mailSender: JavaMailSender,
+    @Value("\${imap.host:imap.gmx.net}") private val imapHost: String,
+    @Value("\${imap.port:993}") private val imapPort: Int,
+    @Value("\${imap.sent-folder:Gesendet}") private val imapSentFolder: String,
 ) {
 
     fun getInvoice(orderId: Long): Invoice {
@@ -68,6 +77,7 @@ class EMailServiceManager(
 
             mailSender.send(message)
             logger.info { "Email successfully sent to $receiver" }
+            copyToSentFolder(message)
 
         } catch (ex: MailAuthenticationException) {
             logger.error(ex) { "SMTP authentication failed while sending email to $receiver" }
@@ -78,6 +88,42 @@ class EMailServiceManager(
         } catch (ex: MessagingException) {
             logger.error(ex) { "Failed to build MIME message for $receiver" }
             throw EmailSendException("Failed to build email message: ${ex.message}", ex)
+        }
+    }
+
+    private fun copyToSentFolder(message: MimeMessage) {
+        val senderImpl = mailSender as? JavaMailSenderImpl
+        val username = senderImpl?.username
+        val password = senderImpl?.password
+        if (username.isNullOrBlank() || password.isNullOrBlank()) {
+            logger.warn { "IMAP credentials not available – skipping copy to '$imapSentFolder' folder." }
+            return
+        }
+
+        val props = Properties().apply {
+            put("mail.store.protocol", "imaps")
+            put("mail.imaps.host", imapHost)
+            put("mail.imaps.port", imapPort.toString())
+            put("mail.imaps.ssl.enable", "true")
+        }
+
+        val session = Session.getInstance(props)
+        val store = session.getStore("imaps")
+        try {
+            store.connect(imapHost, imapPort, username, password)
+            val sentFolder = store.getFolder(imapSentFolder)
+            if (!sentFolder.exists()) {
+                logger.warn { "IMAP folder '$imapSentFolder' does not exist – skipping copy to sent folder." }
+            } else {
+                sentFolder.open(Folder.READ_WRITE)
+                sentFolder.appendMessages(arrayOf(message))
+                sentFolder.close(false)
+                logger.info { "Email successfully copied to IMAP folder '$imapSentFolder'." }
+            }
+        } catch (ex: Exception) {
+            logger.error(ex) { "Failed to copy sent email to IMAP folder '$imapSentFolder'." }
+        } finally {
+            if (store.isConnected) store.close()
         }
     }
 
