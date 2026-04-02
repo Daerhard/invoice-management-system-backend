@@ -43,7 +43,7 @@ class FooterEventHandler : IEventHandler {
         val footerTable = Table(UnitValue.createPercentArray(floatArrayOf(50f, 50f))).useAllAvailableWidth()
 
         footerTable
-            .addCell(createCell("Thomas-Morus-Str. 2"))
+            .addCell(createCell("Schwabenstr. 58"))
             .addCell(createCell("Kontaktinformation", textAlignment = TextAlignment.RIGHT))
             .addCell(createCell("86916 Kaufering"))
             .addCell(createCell("Daniel Erhard", textAlignment = TextAlignment.RIGHT))
