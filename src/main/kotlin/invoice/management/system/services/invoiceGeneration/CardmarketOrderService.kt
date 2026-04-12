@@ -73,6 +73,7 @@ class CardmarketOrderService(
         }
 
         order.orderItems.remove(item)
+        cardmarketOrderRepository.save(order)
         return ResponseEntity.noContent().build()
     }
 }
