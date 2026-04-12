@@ -47,6 +47,12 @@ paths:
     $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1users"
   /v1/users/{id}:
     $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1users~1{id}"
+  /v1/purchases/import:
+    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1purchases~1import"
+  /v1/purchases:
+    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1purchases"
+  /v1/purchases/{userName}:
+    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1purchases~1{userName}"
 
   # E-Mail-Service
   /v1/email/send:
@@ -79,6 +85,10 @@ components:
       $ref: "./openapi_invoice_management_system.yml#/components/schemas/responseMessage"
     invoice:
       $ref: "./openapi_invoice_management_system.yml#/components/schemas/invoice"
+    cardmarketPurchase:
+      $ref: "./openapi_invoice_management_system.yml#/components/schemas/cardmarketPurchase"
+    purchaseItem:
+      $ref: "./openapi_invoice_management_system.yml#/components/schemas/purchaseItem"
 
     # E-Mail-Service
     emailSendRequest:

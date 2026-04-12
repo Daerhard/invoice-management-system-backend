@@ -20,18 +20,24 @@ class CSVTranslationService {
 
     fun translateOrders(file: Resource): List<CSVOrder> {
         return file.inputStream.use { inputStream ->
-            translateCSV(InputStreamReader(inputStream))
+            translateCSV(InputStreamReader(inputStream)) { fields -> parseOrder(fields) }
         }
     }
 
-    private fun translateCSV(reader: Reader): List<CSVOrder> {
+    fun translatePurchases(file: Resource): List<CSVPurchase> {
+        return file.inputStream.use { inputStream ->
+            translateCSV(InputStreamReader(inputStream)) { fields -> parsePurchase(fields) }
+        }
+    }
+
+    private fun <T> translateCSV(reader: Reader, parseRow: (Array<String>) -> T): List<T> {
         return CSVReaderBuilder(reader)
             .withCSVParser(CSV_PARSER)
             .build()
             .use { csvReader ->
                 csvReader.readAll()
                     .drop(1)
-                    .map { fields -> parseOrder(fields) }
+                    .map { fields -> parseRow(fields) }
             }
     }
 
@@ -69,6 +75,31 @@ class CSVTranslationService {
             orderProducts = orderProducts
         )
         return csvOrder
+    }
+
+    private fun parsePurchase(fields: Array<String>): CSVPurchase {
+        val completeDescription = fields[15]
+        val splitDescription = completeDescription.split("|").map { it.trim() }
+        val localizedProductNames = fields[17].split("|").map { it.trim() }
+        val productIds = fields[16].split("|").map { it.trim() }.map(String::toLong)
+        val orderProducts = try {
+            createOrderProducts(localizedProductNames, productIds, splitDescription)
+        } catch (e: Exception) {
+            throw IllegalArgumentException("Failed to create order products for purchase ID: ${fields[0].toLong()}", e)
+        }
+
+        return CSVPurchase(
+            externalOrderId = fields[0].toLong(),
+            sellerUsername = fields[1],
+            dateOfPayment = parsePaymentDate(fields[8]),
+            articleCount = fields[9].toInt(),
+            merchandiseValue = fields[10].replace(",", ".").toDoubleOrNull() ?: throw IllegalArgumentException("Invalid merchandise value"),
+            shipmentCosts = fields[11].replace(",", ".").toDoubleOrNull() ?: throw IllegalArgumentException("Invalid shipment costs"),
+            trusteeFee = fields[12].replace(",", ".").toDoubleOrNull() ?: throw IllegalArgumentException("Invalid trustee service fee"),
+            totalValue = fields[13].replace(",", ".").toDoubleOrNull() ?: throw IllegalArgumentException("Invalid total value"),
+            currency = fields[14],
+            orderProducts = orderProducts
+        )
     }
 
     private fun createOrderProducts(
@@ -131,6 +162,19 @@ data class CSVOrder(
     val splitDescription: List<String>,
     val productIds: List<Long>,
     val localizedProductNames: List<String>,
+    val orderProducts: List<OrderProduct> = emptyList()
+)
+
+data class CSVPurchase(
+    val externalOrderId: Long,
+    val sellerUsername: String,
+    val dateOfPayment: LocalDateTime,
+    val articleCount: Int,
+    val merchandiseValue: Double,
+    val shipmentCosts: Double,
+    val trusteeFee: Double,
+    val totalValue: Double,
+    val currency: String,
     val orderProducts: List<OrderProduct> = emptyList()
 )
 

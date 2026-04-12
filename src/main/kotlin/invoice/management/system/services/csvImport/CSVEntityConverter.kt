@@ -2,8 +2,9 @@ package invoice.management.system.services.csvImport
 
 import invoice.management.system.entities.*
 import invoice.management.system.repositories.CardRepository
-import invoice.management.system.repositories.CustomerRepository
 import invoice.management.system.repositories.CardmarketOrderRepository
+import invoice.management.system.repositories.CardmarketPurchaseRepository
+import invoice.management.system.repositories.CustomerRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -12,7 +13,8 @@ import org.springframework.transaction.annotation.Transactional
 class CSVEntityConverter(
     private val customerRepository: CustomerRepository,
     private val cardRepository: CardRepository,
-    private val cardMarketOrderRepository: CardmarketOrderRepository
+    private val cardMarketOrderRepository: CardmarketOrderRepository,
+    private val cardmarketPurchaseRepository: CardmarketPurchaseRepository,
 ) {
 
     @Transactional
@@ -26,6 +28,14 @@ class CSVEntityConverter(
                 csvOrder,
                 customer
             )
+        }
+    }
+
+    @Transactional
+    fun convertCSVPurchases(csvPurchases: List<CSVPurchase>) {
+        csvPurchases.forEach { csvPurchase ->
+            cardmarketPurchaseRepository.findByExternalOrderId(csvPurchase.externalOrderId)
+                ?: createNewCardmarketPurchase(csvPurchase)
         }
     }
 
@@ -73,6 +83,24 @@ class CSVEntityConverter(
         cardMarketOrderRepository.save(cardMarketOrder)
     }
 
+    private fun createNewCardmarketPurchase(csvPurchase: CSVPurchase) {
+        val purchase = CardmarketPurchase(
+            sellerUserName = csvPurchase.sellerUsername,
+            externalOrderId = csvPurchase.externalOrderId,
+            dateOfPayment = csvPurchase.dateOfPayment.toLocalDate(),
+            articleCount = csvPurchase.articleCount,
+            merchandiseValue = csvPurchase.merchandiseValue,
+            shipmentCost = csvPurchase.shipmentCosts,
+            trusteeFee = csvPurchase.trusteeFee,
+            totalValue = csvPurchase.totalValue,
+            currency = csvPurchase.currency,
+        )
+
+        val purchaseItems = createPurchaseItems(purchase, csvPurchase)
+        purchase.purchaseItems.addAll(purchaseItems)
+        cardmarketPurchaseRepository.save(purchase)
+    }
+
     private fun createOrderItems(
         cardmarketOrder: CardmarketOrder,
         csvOrder: CSVOrder
@@ -82,7 +110,30 @@ class CSVEntityConverter(
 
             OrderItem(
                 cardmarketOrder = cardmarketOrder,
-                count = orderProduct.descriptionDetail.articleCount,
+                count = descriptionDetail.articleCount,
+                condition = descriptionDetail.condition,
+                price = descriptionDetail.price,
+                isFirstEdition = descriptionDetail.isFirstEdition,
+                card = cardRepository.findByIdOrNull(
+                    CardId(
+                        descriptionDetail.konamiSet,
+                        descriptionDetail.productNumber
+                    )
+                ) ?: createCard(orderProduct)
+            )
+        }
+    }
+
+    private fun createPurchaseItems(
+        purchase: CardmarketPurchase,
+        csvPurchase: CSVPurchase
+    ): List<PurchaseItem> {
+        return csvPurchase.orderProducts.map { orderProduct ->
+            val descriptionDetail = orderProduct.descriptionDetail
+
+            PurchaseItem(
+                cardmarketPurchase = purchase,
+                count = descriptionDetail.articleCount,
                 condition = descriptionDetail.condition,
                 price = descriptionDetail.price,
                 isFirstEdition = descriptionDetail.isFirstEdition,
