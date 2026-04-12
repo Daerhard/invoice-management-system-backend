@@ -110,7 +110,7 @@ class CSVEntityConverter(
 
             OrderItem(
                 cardmarketOrder = cardmarketOrder,
-                count = orderProduct.descriptionDetail.articleCount,
+                count = descriptionDetail.articleCount,
                 condition = descriptionDetail.condition,
                 price = descriptionDetail.price,
                 isFirstEdition = descriptionDetail.isFirstEdition,
