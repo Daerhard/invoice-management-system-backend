@@ -5,7 +5,6 @@ import invoice.management.system.entities.Invoice
 import invoice.management.system.model.*
 import invoice.management.system.repositories.CardmarketOrderRepository
 import invoice.management.system.repositories.InvoiceRepository
-import invoice.management.system.repositories.OrderItemRepository
 import invoice.management.system.services.invoiceGeneration.mapper.toDto
 import invoice.management.system.services.invoiceGeneration.pdfGeneration.InvoicePDFGenerationService
 import org.springframework.http.HttpStatus
@@ -19,7 +18,6 @@ class CardmarketOrderService(
     private val cardmarketOrderRepository: CardmarketOrderRepository,
     private val invoiceRepository: InvoiceRepository,
     private val invoicePDFGenerationService: InvoicePDFGenerationService,
-    private val orderItemRepository: OrderItemRepository,
 ) : OrdersApiDelegate {
 
     @Transactional(readOnly = true)
@@ -58,22 +56,5 @@ class CardmarketOrderService(
         )
         val savedInvoice = invoiceRepository.save(invoice)
         return ResponseEntity(savedInvoice.toDto(), HttpStatus.CREATED)
-    }
-
-    @Transactional
-    override fun deleteOrderItem(externalOrderId: Long, itemId: Int): ResponseEntity<Unit> {
-        val order = cardmarketOrderRepository.findByExternalOrderId(externalOrderId)
-            ?: return ResponseEntity.notFound().build()
-
-        val item = orderItemRepository.findById(itemId).orElse(null)
-            ?: return ResponseEntity.notFound().build()
-
-        if (item.cardmarketOrder.id != order.id) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build()
-        }
-
-        order.orderItems.remove(item)
-        cardmarketOrderRepository.save(order)
-        return ResponseEntity.noContent().build()
     }
 }

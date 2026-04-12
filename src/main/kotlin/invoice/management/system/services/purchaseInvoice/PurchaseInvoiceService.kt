@@ -14,6 +14,7 @@ import org.springframework.core.io.Resource
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 class PurchaseInvoiceService(
@@ -77,6 +78,23 @@ class PurchaseInvoiceService(
         val document = item.document ?: throw NotFoundException("no document available for item $itemId")
 
         return ResponseEntity(document.toResource(), HttpStatus.OK)
+    }
+
+    @Transactional
+    override fun deletePurchaseInvoiceItem(id: Int, itemId: Int): ResponseEntity<Unit> {
+        val invoice = purchaseInvoiceRepository.findById(id)
+            .orElseThrow { NotFoundException("purchase invoice with id $id not found") }
+
+        val item = purchaseInvoiceItemRepository.findById(itemId)
+            .orElseThrow { NotFoundException("purchase invoice item with id $itemId not found") }
+
+        if (item.invoice?.id != invoice.id) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build()
+        }
+
+        invoice.removeItem(item)
+        purchaseInvoiceRepository.save(invoice)
+        return ResponseEntity.noContent().build()
     }
 }
 

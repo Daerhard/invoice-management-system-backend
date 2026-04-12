@@ -29,6 +29,11 @@ data class PurchaseInvoice(
         totalPrice = items.fold(BigDecimal.ZERO) { acc, i -> acc + i.price * i.amount.toBigDecimal() }
     }
 
+    fun removeItem(item: PurchaseInvoiceItem) {
+        items.remove(item)
+        totalPrice = items.fold(BigDecimal.ZERO) { acc, i -> acc + i.price * i.amount.toBigDecimal() }
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is PurchaseInvoice) return false
