@@ -33,8 +33,6 @@ paths:
     $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1orders"
   /v1/orders/{userName}:
     $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1orders~1{userName}"
-  /v1/orders/{externalOrderId}/items/{itemId}:
-    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1orders~1{externalOrderId}~1items~1{itemId}"
   /v1/orders/{externalOrderId}/invoice:
     $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1orders~1{externalOrderId}~1invoice"
   /v1/purchase-invoices:
