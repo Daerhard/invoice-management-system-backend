@@ -33,14 +33,14 @@ paths:
     $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1orders"
   /v1/orders/{userName}:
     $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1orders~1{userName}"
-  /v1/orders/{externalOrderId}/items/{itemId}:
-    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1orders~1{externalOrderId}~1items~1{itemId}"
   /v1/orders/{externalOrderId}/invoice:
     $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1orders~1{externalOrderId}~1invoice"
   /v1/purchase-invoices:
     $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1purchase-invoices"
   /v1/purchase-invoices/{id}/items:
     $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1purchase-invoices~1{id}~1items"
+  /v1/purchase-invoices/{id}/items/{itemId}:
+    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1purchase-invoices~1{id}~1items~1{itemId}"
   /v1/purchase-invoices/{id}/items/{itemId}/pdf:
     $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1purchase-invoices~1{id}~1items~1{itemId}~1pdf"
   /v1/users:

@@ -205,6 +205,73 @@ class PurchaseInvoiceServiceTest {
     }
 
     @Test
+    fun whenDeletePurchaseInvoiceItem_withValidData_thenReturn204() {
+        val invoice = createPurchaseInvoice(productName = "Booster Box")
+        val item = createPurchaseInvoiceItem(invoice = invoice)
+        invoice.addItem(item)
+
+        `when`(purchaseInvoiceRepository.findById(1)).thenReturn(Optional.of(invoice))
+        `when`(purchaseInvoiceItemRepository.findById(10)).thenReturn(Optional.of(item))
+        `when`(purchaseInvoiceRepository.save(any(PurchaseInvoice::class.java))).thenAnswer { it.arguments[0] as PurchaseInvoice }
+
+        val response = service.deletePurchaseInvoiceItem(1, 10)
+
+        assertEquals(HttpStatus.NO_CONTENT, response.statusCode)
+    }
+
+    @Test
+    fun whenDeletePurchaseInvoiceItem_thenTotalPriceRecalculated() {
+        val invoice = createPurchaseInvoice(productName = "Booster Box")
+        val item1 = createPurchaseInvoiceItem(amount = 2, price = BigDecimal("10.00"), invoice = invoice)
+        val item2 = createPurchaseInvoiceItem(amount = 1, price = BigDecimal("30.00"), invoice = invoice)
+        invoice.addItem(item1)
+        invoice.addItem(item2)
+
+        `when`(purchaseInvoiceRepository.findById(1)).thenReturn(Optional.of(invoice))
+        `when`(purchaseInvoiceItemRepository.findById(10)).thenReturn(Optional.of(item1))
+        `when`(purchaseInvoiceRepository.save(any(PurchaseInvoice::class.java))).thenAnswer { it.arguments[0] as PurchaseInvoice }
+
+        service.deletePurchaseInvoiceItem(1, 10)
+
+        // After removing item1 (2 * 10.00 = 20.00), only item2 (1 * 30.00 = 30.00) remains
+        assertEquals(BigDecimal("30.00"), invoice.totalPrice)
+    }
+
+    @Test
+    fun whenDeletePurchaseInvoiceItem_withMissingInvoice_thenThrowNotFoundException() {
+        `when`(purchaseInvoiceRepository.findById(999)).thenReturn(Optional.empty())
+
+        assertThrows(NotFoundException::class.java) {
+            service.deletePurchaseInvoiceItem(999, 10)
+        }
+    }
+
+    @Test
+    fun whenDeletePurchaseInvoiceItem_withMissingItem_thenThrowNotFoundException() {
+        val invoice = createPurchaseInvoice()
+        `when`(purchaseInvoiceRepository.findById(1)).thenReturn(Optional.of(invoice))
+        `when`(purchaseInvoiceItemRepository.findById(999)).thenReturn(Optional.empty())
+
+        assertThrows(NotFoundException::class.java) {
+            service.deletePurchaseInvoiceItem(1, 999)
+        }
+    }
+
+    @Test
+    fun whenDeletePurchaseInvoiceItem_withItemNotBelongingToInvoice_thenReturn409() {
+        val invoice = createPurchaseInvoice()
+        val otherInvoice = createPurchaseInvoice(productName = "Other Invoice")
+        val item = createPurchaseInvoiceItem(invoice = otherInvoice)
+
+        `when`(purchaseInvoiceRepository.findById(1)).thenReturn(Optional.of(invoice))
+        `when`(purchaseInvoiceItemRepository.findById(10)).thenReturn(Optional.of(item))
+
+        val response = service.deletePurchaseInvoiceItem(1, 10)
+
+        assertEquals(HttpStatus.CONFLICT, response.statusCode)
+    }
+
+    @Test
     fun whenGetPurchaseInvoiceItemPdf_withNoDocument_thenThrowNotFoundException() {
         val invoice = createPurchaseInvoice()
         val item = createPurchaseInvoiceItem(invoice = invoice)
