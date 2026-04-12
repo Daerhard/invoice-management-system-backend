@@ -270,6 +270,9 @@ class PurchaseInvoiceServiceTest {
 
         assertEquals(HttpStatus.CONFLICT, response.statusCode)
     }
+
+    @Test
+    fun whenGetPurchaseInvoiceItemPdf_withNoDocument_thenThrowNotFoundException() {
         val invoice = createPurchaseInvoice()
         val item = createPurchaseInvoiceItem(invoice = invoice)
 
