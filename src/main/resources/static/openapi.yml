@@ -259,6 +259,35 @@ paths:
           description: invalid user id supplied in authentication token
         '401':
           description: not authenticated
+  '/v1/orders/{externalOrderId}/items/{itemId}':
+    delete:
+      tags:
+        - orders
+      summary: Remove an item from an order
+      description: 'Removes an order item from the given order. Returns 404 if the order or item is not found, or 409 if the item does not belong to the given order.'
+      operationId: deleteOrderItem
+      parameters:
+        - name: externalOrderId
+          in: path
+          required: true
+          description: The external order id.
+          schema:
+            type: integer
+            format: int64
+        - name: itemId
+          in: path
+          required: true
+          description: The id of the order item to remove.
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '204':
+          description: Order item removed successfully.
+        '404':
+          description: Order or order item not found.
+        '409':
+          description: Order item does not belong to the given order.
   '/v1/orders/{externalOrderId}/invoice':
     post:
       tags:
