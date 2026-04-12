@@ -1,0 +1,11 @@
+openapi: '3.0.1'
+info:
+  title: invoice management system – statistics
+  description: Endpoints for statistics and reporting.
+  version: 1.0.0
+
+servers:
+  - url: 'http://localhost:8080/invoice-management-system/api/'
+    description: local server
+
+paths: {}
