@@ -37,8 +37,10 @@ paths:
     $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1orders~1{externalOrderId}~1invoice"
   /v1/purchase-invoices:
     $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1purchase-invoices"
-  /v1/purchase-invoices/{id}/pdf:
-    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1purchase-invoices~1{id}~1pdf"
+  /v1/purchase-invoices/{id}/items:
+    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1purchase-invoices~1{id}~1items"
+  /v1/purchase-invoices/{id}/items/{itemId}/pdf:
+    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1purchase-invoices~1{id}~1items~1{itemId}~1pdf"
   /v1/users:
     $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1users"
   /v1/users/{id}:
@@ -69,6 +71,8 @@ components:
       $ref: "./openapi_invoice_management_system.yml#/components/schemas/cardId"
     purchaseInvoice:
       $ref: "./openapi_invoice_management_system.yml#/components/schemas/purchaseInvoice"
+    purchaseInvoiceItem:
+      $ref: "./openapi_invoice_management_system.yml#/components/schemas/purchaseInvoiceItem"
     responseMessage:
       $ref: "./openapi_invoice_management_system.yml#/components/schemas/responseMessage"
     invoice:

@@ -2,7 +2,6 @@ package invoice.management.system.entities
 
 import jakarta.persistence.*
 import java.math.BigDecimal
-import java.time.LocalDate
 
 @Entity
 @Table(name = "purchase_invoice")
@@ -11,17 +10,11 @@ data class PurchaseInvoice(
     @Column(name = "product_name", nullable = false)
     val productName: String,
 
-    @Column(name = "amount", nullable = false)
-    val amount: Int,
+    @Column(name = "total_price", nullable = false, precision = 19, scale = 4)
+    var totalPrice: BigDecimal = BigDecimal.ZERO,
 
-    @Column(name = "price", nullable = false, precision = 19, scale = 4)
-    val price: BigDecimal,
-
-    @Column(name = "invoice_date", nullable = false)
-    val invoiceDate: LocalDate,
-
-    @OneToOne(mappedBy = "invoice", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
-    var document: PurchaseInvoiceDocument? = null
+    @OneToMany(mappedBy = "invoice", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
+    val items: MutableList<PurchaseInvoiceItem> = mutableListOf()
 
 ) {
 
@@ -30,9 +23,10 @@ data class PurchaseInvoice(
     @Column(name = "id")
     var id: Int = 0
 
-    fun attachDocument(document: PurchaseInvoiceDocument) {
-        this.document = document
-        document.invoice = this
+    fun addItem(item: PurchaseInvoiceItem) {
+        items.add(item)
+        item.invoice = this
+        totalPrice = items.fold(BigDecimal.ZERO) { acc, i -> acc + i.price * i.amount.toBigDecimal() }
     }
 
     override fun equals(other: Any?): Boolean {
@@ -45,3 +39,4 @@ data class PurchaseInvoice(
 
     override fun toString(): String = "PurchaseInvoice(id=$id)"
 }
+

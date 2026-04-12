@@ -4,6 +4,8 @@ import invoice.management.system.api.NotFoundException
 import invoice.management.system.api.PurchaseInvoicesApiDelegate
 import invoice.management.system.entities.PurchaseInvoiceDocument
 import invoice.management.system.model.PurchaseInvoiceDto
+import invoice.management.system.model.PurchaseInvoiceItemDto
+import invoice.management.system.repositories.PurchaseInvoiceItemRepository
 import invoice.management.system.repositories.PurchaseInvoiceRepository
 import invoice.management.system.services.invoiceGeneration.mapper.toDto
 import invoice.management.system.services.invoiceGeneration.mapper.toEntity
@@ -15,13 +17,25 @@ import org.springframework.stereotype.Service
 
 @Service
 class PurchaseInvoiceService(
-    private val purchaseInvoiceRepository: PurchaseInvoiceRepository
+    private val purchaseInvoiceRepository: PurchaseInvoiceRepository,
+    private val purchaseInvoiceItemRepository: PurchaseInvoiceItemRepository
 ) : PurchaseInvoicesApiDelegate {
 
     override fun createPurchaseInvoice(
-        invoiceData: PurchaseInvoiceDto,
+        purchaseInvoice: PurchaseInvoiceDto
+    ): ResponseEntity<PurchaseInvoiceDto> {
+        val entity = purchaseInvoice.toEntity()
+        val saved = purchaseInvoiceRepository.save(entity)
+        return ResponseEntity(saved.toDto(), HttpStatus.CREATED)
+    }
+
+    override fun addPurchaseInvoiceItem(
+        id: Int,
+        itemData: PurchaseInvoiceItemDto,
         pdf: Resource?
     ): ResponseEntity<PurchaseInvoiceDto> {
+        val purchaseInvoice = purchaseInvoiceRepository.findById(id)
+            .orElseThrow { NotFoundException("purchase invoice with id $id not found") }
 
         val pdfBytes = try {
             pdf?.inputStream?.readBytes()
@@ -29,20 +43,23 @@ class PurchaseInvoiceService(
             return ResponseEntity.internalServerError().build()
         }
 
-        if (pdfBytes?.size!! < 4 ||
-            !pdfBytes.copyOfRange(0, 4)
-                .contentEquals(byteArrayOf(0x25, 0x50, 0x44, 0x46))
+        if (pdfBytes != null && (pdfBytes.size < 4 ||
+                    !pdfBytes.copyOfRange(0, 4)
+                        .contentEquals(byteArrayOf(0x25, 0x50, 0x44, 0x46)))
         ) {
             return ResponseEntity.badRequest().build()
         }
 
-        val purchaseInvoice = invoiceData.toEntity()
-        val savedPurchaseInvoice = purchaseInvoiceRepository.save(purchaseInvoice)
+        val item = itemData.toEntity()
+        purchaseInvoice.addItem(item)
 
-        val purchaseInvoiceDocument = PurchaseInvoiceDocument(pdfBytes)
-        savedPurchaseInvoice.attachDocument(purchaseInvoiceDocument)
-        val finalPurchaseInvoice = purchaseInvoiceRepository.save(savedPurchaseInvoice)
-        return ResponseEntity(finalPurchaseInvoice.toDto(), HttpStatus.CREATED)
+        if (pdfBytes != null) {
+            val document = PurchaseInvoiceDocument(pdfBytes)
+            item.attachDocument(document)
+        }
+
+        val saved = purchaseInvoiceRepository.save(purchaseInvoice)
+        return ResponseEntity(saved.toDto(), HttpStatus.CREATED)
     }
 
     override fun getAllPurchaseInvoices(): ResponseEntity<List<PurchaseInvoiceDto>> {
@@ -50,12 +67,16 @@ class PurchaseInvoiceService(
         return ResponseEntity(purchaseInvoices.map { it.toDto() }, HttpStatus.OK)
     }
 
-    override fun getPurchaseInvoicePdf(id: Int): ResponseEntity<Resource> {
-        val purchaseInvoice = purchaseInvoiceRepository.findById(id)
-            .orElseThrow{ NotFoundException("purchase invoice with id $id not found") }
+    override fun getPurchaseInvoiceItemPdf(id: Int, itemId: Int): ResponseEntity<Resource> {
+        purchaseInvoiceRepository.findById(id)
+            .orElseThrow { NotFoundException("purchase invoice with id $id not found") }
 
-        val purchaseInvoiceDocument = if(purchaseInvoice.document != null) purchaseInvoice.document else throw NotFoundException("no document available")
+        val item = purchaseInvoiceItemRepository.findById(itemId)
+            .orElseThrow { NotFoundException("purchase invoice item with id $itemId not found") }
 
-        return ResponseEntity(purchaseInvoiceDocument?.toResource(), HttpStatus.OK)
+        val document = item.document ?: throw NotFoundException("no document available for item $itemId")
+
+        return ResponseEntity(document.toResource(), HttpStatus.OK)
     }
 }
+
