@@ -1,6 +1,7 @@
 package invoice.management.system.factories
 
 import invoice.management.system.entities.*
+import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
 
@@ -122,6 +123,30 @@ class EntityFactory {
             city = city,
             street = street,
             email = email,
+        )
+
+        fun createPurchaseInvoice(
+            productName: String = "Test Product",
+            totalPrice: BigDecimal = BigDecimal.ZERO,
+            items: MutableList<PurchaseInvoiceItem> = mutableListOf()
+        ) = PurchaseInvoice(
+            productName = productName,
+            totalPrice = totalPrice,
+            items = items
+        )
+
+        fun createPurchaseInvoiceItem(
+            purchaseType: PurchaseType = PurchaseType.BOOSTER,
+            amount: Int = 2,
+            price: BigDecimal = BigDecimal("9.99"),
+            invoiceDate: LocalDate = LocalDate.of(2024, 1, 15),
+            invoice: PurchaseInvoice? = null,
+        ) = PurchaseInvoiceItem(
+            purchaseType = purchaseType,
+            amount = amount,
+            price = price,
+            invoiceDate = invoiceDate,
+            invoice = invoice,
         )
     }
 }

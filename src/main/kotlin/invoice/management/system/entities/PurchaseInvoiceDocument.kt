@@ -11,8 +11,8 @@ data class PurchaseInvoiceDocument(
     val pdfData: ByteArray,
 
     @OneToOne
-    @JoinColumn(name = "purchase_invoice_id")
-    var invoice: PurchaseInvoice? = null
+    @JoinColumn(name = "purchase_invoice_item_id")
+    var item: PurchaseInvoiceItem? = null
 
     ) {
 
@@ -29,6 +29,6 @@ data class PurchaseInvoiceDocument(
 
     override fun hashCode(): Int = id.hashCode()
 
-    override fun toString(): String = "PurchaseInvoice(id=$id)"
+    override fun toString(): String = "PurchaseInvoiceDocument(id=$id)"
 
 }

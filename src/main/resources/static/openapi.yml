@@ -289,24 +289,15 @@ paths:
     post:
       tags:
         - PurchaseInvoices
-      summary: Create a new purchase invoice with PDF upload
-      description: Accepts structured invoice data and a PDF file and stores them separately.
+      summary: Create a new purchase invoice
+      description: Creates a new purchase invoice with a product name. Items can be added separately.
       operationId: createPurchaseInvoice
       requestBody:
         required: true
         content:
-          multipart/form-data:
+          application/json:
             schema:
-              type: object
-              properties:
-                invoiceData:
-                  $ref: '#/components/schemas/purchaseInvoice'
-                pdf:
-                  type: string
-                  format: binary
-              required:
-                - invoiceData
-                - pdf
+              $ref: '#/components/schemas/purchaseInvoice'
       responses:
         '201':
           description: Purchase invoice created successfully.
@@ -316,12 +307,6 @@ paths:
                 $ref: '#/components/schemas/purchaseInvoice'
         '400':
           description: Invalid input.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/responseMessage'
-        '500':
-          description: Server error.
           content:
             application/json:
               schema:
@@ -340,14 +325,73 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/purchaseInvoice'
-  '/v1/purchase-invoices/{id}/pdf':
+  '/v1/purchase-invoices/{id}/items':
+    post:
+      tags:
+        - PurchaseInvoices
+      summary: Add an item to a purchase invoice
+      description: Adds a new purchase invoice item (with an optional PDF document) to the given purchase invoice.
+      operationId: addPurchaseInvoiceItem
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                itemData:
+                  $ref: '#/components/schemas/purchaseInvoiceItem'
+                pdf:
+                  type: string
+                  format: binary
+              required:
+                - itemData
+      responses:
+        '201':
+          description: Item added successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/purchaseInvoice'
+        '400':
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responseMessage'
+        '404':
+          description: Purchase invoice not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responseMessage'
+        '500':
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responseMessage'
+  '/v1/purchase-invoices/{id}/items/{itemId}/pdf':
     get:
       tags:
         - PurchaseInvoices
-      summary: Download purchase invoice PDF
-      operationId: getPurchaseInvoicePdf
+      summary: Download the PDF document of a purchase invoice item
+      operationId: getPurchaseInvoiceItemPdf
       parameters:
         - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - name: itemId
           in: path
           required: true
           schema:
@@ -705,7 +749,7 @@ components:
         - number
     purchaseInvoice:
       type: object
-      description: Structured data required to create a purchase invoice.
+      description: 'A purchase invoice containing a product name, a computed total price, and a list of items.'
       properties:
         id:
           type: integer
@@ -713,18 +757,49 @@ components:
           description: Unique identifier for the purchase invoice.
         productName:
           type: string
+          description: Name of the purchased product.
+        totalPrice:
+          type: number
+          format: double
+          description: Total price computed from all items.
+          readOnly: true
+        items:
+          type: array
+          description: List of purchase invoice items.
+          readOnly: true
+          items:
+            $ref: '#/components/schemas/purchaseInvoiceItem'
+      required:
+        - productName
+    purchaseInvoiceItem:
+      type: object
+      description: A single item entry within a purchase invoice.
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: Unique identifier for the purchase invoice item.
+        purchaseType:
+          type: string
+          enum:
+            - DISPLAY
+            - CASE
+            - BOOSTER
+          description: Type of item purchased.
         amount:
           type: integer
           format: int32
+          description: Quantity purchased.
         price:
           type: number
           format: double
+          description: Price per unit.
         invoiceDate:
           type: string
           format: date
+          description: Date of the invoice.
       required:
-        - id
-        - productName
+        - purchaseType
         - amount
         - price
         - invoiceDate
