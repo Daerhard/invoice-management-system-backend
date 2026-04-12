@@ -1,0 +1,513 @@
+openapi: '3.0.1'
+info:
+  title: invoice management system – customers, users and orders
+  description: Endpoints for managing customers, users, orders, and CSV imports.
+  version: 1.0.0
+
+servers:
+  - url: 'http://localhost:8080/invoice-management-system/api/'
+    description: local server
+
+paths:
+
+  /v1/customers:
+    get:
+      tags:
+        - customers
+      summary: get all customers
+      description: returns all customers
+      operationId: getAllCustomers
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/customer'
+        '400':
+          description: invalid user id supplied in authentication token
+        '401':
+          description: not authenticated
+
+  /v1/customers/professional:
+    get:
+      tags:
+        - customers
+      summary: get all professional customers
+      description: returns all customers where isProfessional is true
+      operationId: getProfessionalCustomers
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/customer'
+        '400':
+          description: invalid user id supplied in authentication token
+        '401':
+          description: not authenticated
+
+  /v1/customers/{userName}/email:
+    patch:
+      tags:
+        - customers
+      summary: update customer email
+      description: updates the email address of a specific customer
+      operationId: updateCustomerEmail
+      parameters:
+        - name: userName
+          in: path
+          required: true
+          description: The username of the customer.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/emailUpdate'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/customer'
+        '404':
+          description: customer not found
+        '400':
+          description: invalid input
+
+  /v1/import:
+    post:
+      tags:
+        - CSVImport
+      summary: Upload a CSV file for database import
+      description: Accepts a CSV file and imports its data into the database.
+      operationId: importCSVData
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: The CSV file to be uploaded.
+      responses:
+        '201':
+          description: CSV file imported successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responseMessage'
+        '400':
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responseMessage'
+        '500':
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responseMessage'
+
+  /v1/orders:
+    get:
+      tags:
+        - orders
+      summary: get all orders
+      description: returns all orders
+      operationId: getOrders
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/cardmarketOrder'
+        '400':
+          description: invalid user id supplied in authentication token
+        '401':
+          description: not authenticated
+
+  /v1/orders/{userName}:
+    get:
+      tags:
+        - orders
+      summary: get all orders by user name
+      description: returns all orders by user name
+      operationId: getOrdersByUserName
+      parameters:
+        - name: userName
+          in: path
+          required: true
+          description: The username for which to retrieve orders.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/cardmarketOrder'
+        '400':
+          description: invalid user id supplied in authentication token
+        '401':
+          description: not authenticated
+
+  /v1/orders/{externalOrderId}/invoice:
+    post:
+      tags:
+        - orders
+      summary: Create and persist an invoice for an order
+      description: Generates a PDF invoice for the given order, persists it in the database, and returns the invoice data. Returns 409 if an invoice already exists for this order.
+      operationId: createInvoice
+      parameters:
+        - name: externalOrderId
+          in: path
+          required: true
+          description: The external order id.
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '201':
+          description: Invoice created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/invoice'
+        '404':
+          description: Order not found.
+        '409':
+          description: Invoice already exists for this order.
+
+  /v1/users:
+    post:
+      tags:
+        - users
+      summary: Create a new user
+      description: Persists a new user in the database and returns the created user.
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/user'
+      responses:
+        '201':
+          description: User created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user'
+        '400':
+          description: Invalid input.
+
+    get:
+      tags:
+        - users
+      summary: Get all users
+      description: Returns a list of all users.
+      operationId: getAllUsers
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/user'
+
+  /v1/users/{id}:
+    get:
+      tags:
+        - users
+      summary: Get user by id
+      description: Returns a single user by its id.
+      operationId: getUserById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user'
+        '404':
+          description: User not found.
+
+components:
+  schemas:
+    user:
+      type: object
+      description: user object
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: Unique identifier for the user.
+        username:
+          type: string
+          description: Username of the user.
+        password:
+          type: string
+          description: Password of the user.
+          writeOnly: true
+          nullable: true
+        firstName:
+          type: string
+          description: First name of the user.
+        lastName:
+          type: string
+          description: Last name of the user.
+        zipCode:
+          type: string
+          description: ZIP code of the user's address.
+        city:
+          type: string
+          description: City of the user's address.
+        street:
+          type: string
+          description: Street of the user's address.
+        email:
+          type: string
+          description: Email address of the user.
+      required:
+        - username
+        - firstName
+        - lastName
+        - zipCode
+        - city
+        - street
+        - email
+
+    customer:
+      type: object
+      description: customer object
+      properties:
+        user_name:
+          type: string
+          description: user name of the customer
+          example: "FakeJohnny"
+        is_professional:
+            type: boolean
+            description: status of the customer
+            example: true
+        email:
+          type: string
+          nullable: true
+          description: email address of the customer
+          example: "customer@example.com"
+      required:
+        - user_name
+        - is_professional
+
+    emailUpdate:
+      type: object
+      description: request body for updating customer email
+      properties:
+        email:
+          type: string
+          nullable: true
+          description: new email address of the customer
+          example: "customer@example.com"
+      required:
+        - email
+
+    cardmarketOrder:
+      type: object
+      description: order object
+      properties:
+        customer:
+          $ref: '#/components/schemas/customer'
+        order_id:
+          type: integer
+          format: int64
+          description: Unique identifier for the order.
+        payment_date:
+          type: string
+          format: date
+          description: Date of payment for the order.
+        article_count:
+          type: integer
+          format: int32
+          description: Number of articles in the order.
+        merchandise_value:
+          type: number
+          format: double
+          description: Total value of the merchandise in the order.
+        shipment_cost:
+          type: number
+          format: double
+          description: Cost of shipping for the order.
+        total_value:
+          type: number
+          format: double
+          description: Total value of the order, including merchandise and shipment costs.
+        commission:
+          type: number
+          format: double
+          description: Commission charged for the order.
+        currency:
+          type: string
+          description: Currency code for monetary values.
+          example: EUR
+        orderItems:
+          type: array
+          description: List of items associated with the purchase.
+          items:
+            $ref: '#/components/schemas/orderItem'
+        invoice:
+          $ref: '#/components/schemas/invoice'
+          nullable: true
+      required:
+        - customer
+        - order_id
+        - payment_date
+        - article_count
+        - merchandise_value
+        - shipment_cost
+        - total_value
+        - commission
+        - currency
+
+    orderItem:
+      type: object
+      description: Order item object
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: Unique identifier for the order item.
+        orderId:
+          type: integer
+          format: int64
+          description: Identifier of the associated purchase.
+        count:
+          type: integer
+          format: int32
+          description: Number of items in the order.
+        condition:
+          type: string
+          description: Condition of the item (e.g., new, used).
+        price:
+          type: number
+          format: double
+          description: Price of the individual item.
+        card:
+          $ref: '#/components/schemas/card'
+      required:
+        - order_id
+        - count
+        - condition
+        - price
+        - card
+
+    card:
+      type: object
+      description: Card object
+      properties:
+        id:
+          $ref: '#/components/schemas/cardId'
+        complete_description:
+          type: string
+          description: Detailed description of the card.
+        product_name:
+          type: string
+          description: Name of the product associated with the card.
+        name:
+          type: string
+          description: Name of the card.
+        language:
+          type: string
+          description: Language of the card.
+        rarity:
+          type: string
+          description: Rarity level of the card.
+        product_id:
+          type: integer
+          format: int64
+          description: Identifier of the associated product.
+      required:
+        - id
+        - product_name
+        - name
+        - language
+        - rarity
+        - product_id
+
+    cardId:
+      type: object
+      description: Composite key for the Card entity.
+      properties:
+        konamiSet:
+          type: string
+          description: Konami set identifier of the card.
+        number:
+          type: string
+          description: Unique card number within the Konami set.
+      required:
+        - konamiSet
+        - number
+
+    invoice:
+      type: object
+      description: Invoice associated with an order.
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique identifier for the invoice.
+        orderId:
+          type: integer
+          format: int64
+          description: External order id this invoice belongs to.
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the invoice was created.
+        invoicePdf:
+          type: string
+          format: byte
+          nullable: true
+          description: PDF content of the invoice as a base64-encoded byte array.
+        sent:
+          type: boolean
+          description: Indicates whether the invoice has been sent to the customer.
+      required:
+        - id
+        - orderId
+        - createdAt
+        - sent
+
+    responseMessage:
+      type: object
+      properties:
+        message:
+          type: string
+          example: CSV schema validation failed. / CSV file import was successful. / Internal Server Error.

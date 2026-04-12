@@ -14,55 +14,61 @@ servers:
     description: local server
 
 paths:
-  # Invoice-Management-System
+  # Customers, Users and Orders
   /v1/customers:
-    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1customers"
+    $ref: "./openapi_customers_users_orders.yml#/paths/~1v1~1customers"
   /v1/customers/professional:
-    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1customers~1professional"
+    $ref: "./openapi_customers_users_orders.yml#/paths/~1v1~1customers~1professional"
   /v1/customers/{userName}/email:
-    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1customers~1{userName}~1email"
+    $ref: "./openapi_customers_users_orders.yml#/paths/~1v1~1customers~1{userName}~1email"
   /v1/import:
-    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1import"
-  /v1/generateInvoicePDF/{cardmarketExternalOrderId}:
-    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1generateInvoicePDF~1{cardmarketExternalOrderId}"
-  /v1/generateInvoicesPDF/{startDate}/{endDate}:
-    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1generateInvoicesPDF~1{startDate}~1{endDate}"
-  /v1/generateInvoiceZUGFeRD/{cardmarketExternalOrderId}:
-    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1generateInvoiceZUGFeRD~1{cardmarketExternalOrderId}"
+    $ref: "./openapi_customers_users_orders.yml#/paths/~1v1~1import"
   /v1/orders:
-    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1orders"
+    $ref: "./openapi_customers_users_orders.yml#/paths/~1v1~1orders"
   /v1/orders/{userName}:
-    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1orders~1{userName}"
+    $ref: "./openapi_customers_users_orders.yml#/paths/~1v1~1orders~1{userName}"
   /v1/orders/{externalOrderId}/invoice:
-    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1orders~1{externalOrderId}~1invoice"
-  /v1/purchase-invoices:
-    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1purchase-invoices"
-  /v1/purchase-invoices/{id}/items:
-    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1purchase-invoices~1{id}~1items"
-  /v1/purchase-invoices/{id}/items/{itemId}:
-    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1purchase-invoices~1{id}~1items~1{itemId}"
-  /v1/purchase-invoices/{id}/items/{itemId}/pdf:
-    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1purchase-invoices~1{id}~1items~1{itemId}~1pdf"
-  /v1/refunds:
-    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1refunds"
-  /v1/refunds/{id}:
-    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1refunds~1{id}"
-  /v1/supplies:
-    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1supplies"
-  /v1/supplies/{id}:
-    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1supplies~1{id}"
-  /v1/supplies/{id}/pdf:
-    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1supplies~1{id}~1pdf"
+    $ref: "./openapi_customers_users_orders.yml#/paths/~1v1~1orders~1{externalOrderId}~1invoice"
   /v1/users:
-    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1users"
+    $ref: "./openapi_customers_users_orders.yml#/paths/~1v1~1users"
   /v1/users/{id}:
-    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1users~1{id}"
+    $ref: "./openapi_customers_users_orders.yml#/paths/~1v1~1users~1{id}"
+
+  # Invoice Generation
+  /v1/generateInvoicePDF/{cardmarketExternalOrderId}:
+    $ref: "./openapi_generate_invoices.yml#/paths/~1v1~1generateInvoicePDF~1{cardmarketExternalOrderId}"
+  /v1/generateInvoicesPDF/{startDate}/{endDate}:
+    $ref: "./openapi_generate_invoices.yml#/paths/~1v1~1generateInvoicesPDF~1{startDate}~1{endDate}"
+  /v1/generateInvoiceZUGFeRD/{cardmarketExternalOrderId}:
+    $ref: "./openapi_generate_invoices.yml#/paths/~1v1~1generateInvoiceZUGFeRD~1{cardmarketExternalOrderId}"
+
+  # Purchase Invoices, Refunds and Supplies
+  /v1/purchase-invoices:
+    $ref: "./openapi_purchase_invoices_refunds_supplies.yml#/paths/~1v1~1purchase-invoices"
+  /v1/purchase-invoices/{id}/items:
+    $ref: "./openapi_purchase_invoices_refunds_supplies.yml#/paths/~1v1~1purchase-invoices~1{id}~1items"
+  /v1/purchase-invoices/{id}/items/{itemId}:
+    $ref: "./openapi_purchase_invoices_refunds_supplies.yml#/paths/~1v1~1purchase-invoices~1{id}~1items~1{itemId}"
+  /v1/purchase-invoices/{id}/items/{itemId}/pdf:
+    $ref: "./openapi_purchase_invoices_refunds_supplies.yml#/paths/~1v1~1purchase-invoices~1{id}~1items~1{itemId}~1pdf"
+  /v1/refunds:
+    $ref: "./openapi_purchase_invoices_refunds_supplies.yml#/paths/~1v1~1refunds"
+  /v1/refunds/{id}:
+    $ref: "./openapi_purchase_invoices_refunds_supplies.yml#/paths/~1v1~1refunds~1{id}"
+  /v1/supplies:
+    $ref: "./openapi_purchase_invoices_refunds_supplies.yml#/paths/~1v1~1supplies"
+  /v1/supplies/{id}:
+    $ref: "./openapi_purchase_invoices_refunds_supplies.yml#/paths/~1v1~1supplies~1{id}"
+  /v1/supplies/{id}/pdf:
+    $ref: "./openapi_purchase_invoices_refunds_supplies.yml#/paths/~1v1~1supplies~1{id}~1pdf"
+
+  # Cardmarket Purchases
   /v1/purchases/import:
-    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1purchases~1import"
+    $ref: "./openapi_cardmarket_purchases.yml#/paths/~1v1~1purchases~1import"
   /v1/purchases:
-    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1purchases"
+    $ref: "./openapi_cardmarket_purchases.yml#/paths/~1v1~1purchases"
   /v1/purchases/{userName}:
-    $ref: "./openapi_invoice_management_system.yml#/paths/~1v1~1purchases~1{userName}"
+    $ref: "./openapi_cardmarket_purchases.yml#/paths/~1v1~1purchases~1{userName}"
 
   # E-Mail-Service
   /v1/email/send:
@@ -72,37 +78,41 @@ paths:
 
 components:
   schemas:
-    # Invoice-Management-System
+    # Customers, Users and Orders
     user:
-      $ref: "./openapi_invoice_management_system.yml#/components/schemas/user"
+      $ref: "./openapi_customers_users_orders.yml#/components/schemas/user"
     customer:
-      $ref: "./openapi_invoice_management_system.yml#/components/schemas/customer"
+      $ref: "./openapi_customers_users_orders.yml#/components/schemas/customer"
     emailUpdate:
-      $ref: "./openapi_invoice_management_system.yml#/components/schemas/emailUpdate"
+      $ref: "./openapi_customers_users_orders.yml#/components/schemas/emailUpdate"
     cardmarketOrder:
-      $ref: "./openapi_invoice_management_system.yml#/components/schemas/cardmarketOrder"
+      $ref: "./openapi_customers_users_orders.yml#/components/schemas/cardmarketOrder"
     orderItem:
-      $ref: "./openapi_invoice_management_system.yml#/components/schemas/orderItem"
+      $ref: "./openapi_customers_users_orders.yml#/components/schemas/orderItem"
     card:
-      $ref: "./openapi_invoice_management_system.yml#/components/schemas/card"
+      $ref: "./openapi_customers_users_orders.yml#/components/schemas/card"
     cardId:
-      $ref: "./openapi_invoice_management_system.yml#/components/schemas/cardId"
-    purchaseInvoice:
-      $ref: "./openapi_invoice_management_system.yml#/components/schemas/purchaseInvoice"
-    purchaseInvoiceItem:
-      $ref: "./openapi_invoice_management_system.yml#/components/schemas/purchaseInvoiceItem"
-    refund:
-      $ref: "./openapi_invoice_management_system.yml#/components/schemas/refund"
-    supply:
-      $ref: "./openapi_invoice_management_system.yml#/components/schemas/supply"
-    responseMessage:
-      $ref: "./openapi_invoice_management_system.yml#/components/schemas/responseMessage"
+      $ref: "./openapi_customers_users_orders.yml#/components/schemas/cardId"
     invoice:
-      $ref: "./openapi_invoice_management_system.yml#/components/schemas/invoice"
+      $ref: "./openapi_customers_users_orders.yml#/components/schemas/invoice"
+    responseMessage:
+      $ref: "./openapi_customers_users_orders.yml#/components/schemas/responseMessage"
+
+    # Purchase Invoices, Refunds and Supplies
+    purchaseInvoice:
+      $ref: "./openapi_purchase_invoices_refunds_supplies.yml#/components/schemas/purchaseInvoice"
+    purchaseInvoiceItem:
+      $ref: "./openapi_purchase_invoices_refunds_supplies.yml#/components/schemas/purchaseInvoiceItem"
+    refund:
+      $ref: "./openapi_purchase_invoices_refunds_supplies.yml#/components/schemas/refund"
+    supply:
+      $ref: "./openapi_purchase_invoices_refunds_supplies.yml#/components/schemas/supply"
+
+    # Cardmarket Purchases
     cardmarketPurchase:
-      $ref: "./openapi_invoice_management_system.yml#/components/schemas/cardmarketPurchase"
+      $ref: "./openapi_cardmarket_purchases.yml#/components/schemas/cardmarketPurchase"
     purchaseItem:
-      $ref: "./openapi_invoice_management_system.yml#/components/schemas/purchaseItem"
+      $ref: "./openapi_cardmarket_purchases.yml#/components/schemas/purchaseItem"
 
     # E-Mail-Service
     emailSendRequest:
