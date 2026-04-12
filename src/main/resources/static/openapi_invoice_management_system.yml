@@ -487,6 +487,85 @@ paths:
         '409':
           description: Order item does not belong to the given order.
 
+  /v1/purchases/import:
+    post:
+      tags:
+        - cardmarketPurchases
+      summary: Upload a CSV file for cardmarket purchases import
+      description: Accepts a CSV file and imports cardmarket purchase data into the database.
+      operationId: importCSVPurchaseData
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: The CSV file to be uploaded.
+      responses:
+        '201':
+          description: CSV file imported successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responseMessage'
+        '400':
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responseMessage'
+        '500':
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responseMessage'
+
+  /v1/purchases:
+    get:
+      tags:
+        - cardmarketPurchases
+      summary: Get all cardmarket purchases
+      description: Returns all cardmarket purchases with their items.
+      operationId: getPurchases
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/cardmarketPurchase'
+
+  /v1/purchases/{userName}:
+    get:
+      tags:
+        - cardmarketPurchases
+      summary: Get cardmarket purchases by seller username
+      description: Returns all cardmarket purchases from the given seller username.
+      operationId: getPurchasesByUserName
+      parameters:
+        - name: userName
+          in: path
+          required: true
+          description: The username of the seller.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/cardmarketPurchase'
+
   /v1/orders/{externalOrderId}/invoice:
     post:
       tags:
@@ -792,6 +871,100 @@ components:
         message:
           type: string
           example: CSV schema validation failed. / CSV file import was successful. / Internal Server Error.
+
+    cardmarketPurchase:
+      type: object
+      description: Cardmarket purchase object representing a purchase made by the user.
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: Unique identifier for the purchase.
+        sellerUserName:
+          type: string
+          description: Username of the seller on Cardmarket.
+        externalOrderId:
+          type: integer
+          format: int64
+          description: External order ID from Cardmarket.
+        dateOfPayment:
+          type: string
+          format: date
+          description: Date of payment.
+        articleCount:
+          type: integer
+          format: int32
+          description: Number of articles in the purchase.
+        merchandiseValue:
+          type: number
+          format: double
+          description: Total merchandise value.
+        shipmentCost:
+          type: number
+          format: double
+          description: Shipment cost.
+        trusteeFee:
+          type: number
+          format: double
+          description: Trustee service fee charged by Cardmarket.
+        totalValue:
+          type: number
+          format: double
+          description: Total value including all costs.
+        currency:
+          type: string
+          description: Currency code.
+          example: EUR
+        purchaseItems:
+          type: array
+          description: List of items in the purchase.
+          items:
+            $ref: '#/components/schemas/purchaseItem'
+      required:
+        - sellerUserName
+        - externalOrderId
+        - dateOfPayment
+        - articleCount
+        - merchandiseValue
+        - shipmentCost
+        - trusteeFee
+        - totalValue
+        - currency
+
+    purchaseItem:
+      type: object
+      description: A single item in a cardmarket purchase.
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: Unique identifier for the purchase item.
+        purchaseId:
+          type: integer
+          format: int32
+          description: Identifier of the associated purchase.
+        count:
+          type: integer
+          format: int32
+          description: Number of cards in this item.
+        condition:
+          type: string
+          description: Condition of the card (e.g., NM, EX).
+        price:
+          type: number
+          format: double
+          description: Price per card.
+        isFirstEdition:
+          type: boolean
+          description: Whether the card is a first edition.
+        card:
+          $ref: '#/components/schemas/card'
+      required:
+        - count
+        - condition
+        - price
+        - isFirstEdition
+        - card
 
     invoice:
       type: object
