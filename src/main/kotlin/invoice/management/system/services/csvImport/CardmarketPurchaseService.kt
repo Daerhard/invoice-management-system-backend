@@ -2,6 +2,7 @@ package invoice.management.system.services.csvImport
 
 import invoice.management.system.api.CardmarketPurchasesApiDelegate
 import invoice.management.system.model.CardmarketPurchaseDto
+import invoice.management.system.model.CreateRefund400ResponseDto
 import invoice.management.system.model.ResponseMessageDto
 import invoice.management.system.repositories.CardmarketPurchaseRepository
 import invoice.management.system.services.invoiceGeneration.mapper.toDto
@@ -19,15 +20,15 @@ class CardmarketPurchaseService(
     private val cardmarketPurchaseRepository: CardmarketPurchaseRepository,
 ) : CardmarketPurchasesApiDelegate {
 
-    override fun importCSVPurchaseData(file: Resource?): ResponseEntity<ResponseMessageDto> {
+    override fun importCSVPurchaseData(file: Resource?): ResponseEntity<CreateRefund400ResponseDto> {
         if (file == null) {
-            return ResponseEntity(ResponseMessageDto("No file provided"), HttpStatus.BAD_REQUEST)
+            return ResponseEntity(CreateRefund400ResponseDto("No file provided"), HttpStatus.BAD_REQUEST)
         }
 
         val validationErrors = csvSchemaValidationService.validatePurchaseSchema(file)
         if (validationErrors.isNotEmpty()) {
             return ResponseEntity(
-                ResponseMessageDto("CSV schema validation failed:$validationErrors"),
+                CreateRefund400ResponseDto("CSV schema validation failed:$validationErrors"),
                 HttpStatus.BAD_REQUEST
             )
         }
@@ -35,9 +36,9 @@ class CardmarketPurchaseService(
         return try {
             val csvPurchases = csvTranslationService.translatePurchases(file)
             csvEntityConverter.convertCSVPurchases(csvPurchases)
-            ResponseEntity(ResponseMessageDto("CSV file import was successful"), HttpStatus.CREATED)
+            ResponseEntity(CreateRefund400ResponseDto("CSV file import was successful"), HttpStatus.CREATED)
         } catch (ex: Exception) {
-            ResponseEntity(ResponseMessageDto(ex.message), HttpStatus.BAD_REQUEST)
+            ResponseEntity(CreateRefund400ResponseDto(ex.message), HttpStatus.BAD_REQUEST)
         }
     }
 

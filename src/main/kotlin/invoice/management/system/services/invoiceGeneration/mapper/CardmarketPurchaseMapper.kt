@@ -29,6 +29,6 @@ fun PurchaseItem.toDto(): PurchaseItemDto {
         condition = condition,
         price = price,
         isFirstEdition = isFirstEdition,
-        card = card.toDto()
+        card = card.toPurchaseItemCardDto()
     )
 }
