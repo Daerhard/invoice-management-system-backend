@@ -54,6 +54,8 @@ springdoc:
         url: /openapi_invoice_management_system.yml
       - name: email-service
         url: /openapi_e-mail_service.yml
+      - name: euer
+        url: /openapi_euer.yml
     display-request-duration: true
     groups-order: desc
     default-models-expand-depth: -1

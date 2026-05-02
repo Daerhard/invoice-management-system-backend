@@ -830,6 +830,190 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/emailSendResponse'
+  /v1/euer:
+    post:
+      tags:
+        - Euer
+      summary: Create a new EÜR for a given year
+      description: Creates a new EÜR and auto-populates all sections with calculated values from existing data.
+      operationId: createEuer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/createEuerRequest'
+      responses:
+        '201':
+          description: EÜR created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/euerReport'
+        '400':
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: EÜR for year 2024 already exists.
+        '409':
+          description: An EÜR for this year already exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1v1~1euer/post/responses/400/content/application~1json/schema'
+    get:
+      tags:
+        - Euer
+      summary: Get all EÜRs
+      operationId: getAllEuer
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/euerReport'
+  '/v1/euer/{id}':
+    get:
+      tags:
+        - Euer
+      summary: Get an EÜR by ID
+      operationId: getEuerById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/euerReport'
+        '404':
+          description: EÜR not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1v1~1euer/post/responses/400/content/application~1json/schema'
+    delete:
+      tags:
+        - Euer
+      summary: Delete an EÜR
+      operationId: deleteEuer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: EÜR deleted successfully.
+        '404':
+          description: EÜR not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1v1~1euer/post/responses/400/content/application~1json/schema'
+  '/v1/euer/{id}/publish':
+    patch:
+      tags:
+        - Euer
+      summary: Publish an EÜR
+      operationId: publishEuer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: EÜR published successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/euerReport'
+        '404':
+          description: EÜR not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1v1~1euer/post/responses/400/content/application~1json/schema'
+  '/v1/euer/{id}/positions':
+    post:
+      tags:
+        - Euer
+      summary: Add a position to an EÜR section
+      description: Adds a manually entered position to any section of the given EÜR.
+      operationId: addEuerPosition
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/euerPositionRequest'
+      responses:
+        '201':
+          description: Position added successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/euerPosition'
+        '404':
+          description: EÜR not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1v1~1euer/post/responses/400/content/application~1json/schema'
+  '/v1/euer/{id}/positions/{positionId}':
+    delete:
+      tags:
+        - Euer
+      summary: Delete a position from an EÜR
+      operationId: deleteEuerPosition
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: positionId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Position deleted successfully.
+        '404':
+          description: EÜR or position not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1v1~1euer/post/responses/400/content/application~1json/schema'
 components:
   schemas:
     user:
@@ -1352,3 +1536,97 @@ components:
         message:
           type: string
           example: Email sent successfully.
+    createEuerRequest:
+      type: object
+      description: Request body for creating a new EÜR.
+      properties:
+        year:
+          type: integer
+          format: int32
+          description: The fiscal year for which the EÜR should be created.
+      required:
+        - year
+    euerReport:
+      type: object
+      description: An EÜR (Einnahmenüberschussrechnung) for a given fiscal year.
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique identifier of the EÜR.
+        year:
+          type: integer
+          format: int32
+          description: The fiscal year of this EÜR.
+        published:
+          type: boolean
+          description: Whether this EÜR has been published.
+        createdAt:
+          type: string
+          format: date
+          description: Date when the EÜR was created.
+        positions:
+          type: array
+          description: All positions across all sections of this EÜR.
+          readOnly: true
+          items:
+            $ref: '#/components/schemas/euerPosition'
+    euerPosition:
+      type: object
+      description: A single position within an EÜR section.
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique identifier of the position.
+        euerReportId:
+          type: integer
+          format: int64
+          description: ID of the EÜR this position belongs to.
+        section:
+          $ref: '#/components/schemas/euerSection'
+        description:
+          type: string
+          description: Description of the position.
+        value:
+          type: number
+          format: double
+          description: Monetary value of the position.
+        automaticallyCalculated:
+          type: boolean
+          description: Whether this position was automatically calculated from existing data or manually added.
+      required:
+        - section
+        - description
+        - value
+        - automaticallyCalculated
+    euerPositionRequest:
+      type: object
+      description: Request body for manually adding a position to an EÜR section.
+      properties:
+        section:
+          $ref: '#/components/schemas/euerSection'
+        description:
+          type: string
+          description: Description of the position.
+        value:
+          type: number
+          format: double
+          description: Monetary value of the position.
+      required:
+        - section
+        - description
+        - value
+    euerSection:
+      type: string
+      description: Section of the EÜR.
+      enum:
+        - BETRIEBSEINNAHMEN
+        - WAREN_ROHSTOFFE_HILFSSTOFFE
+        - GERINGWERTIGE_WIRTSCHAFTSGUETER
+        - RECHTS_UND_STEUERBERATUNG
+        - BEITRAEGE_GEBUEHREN_ABGABEN_VERSICHERUNGEN
+        - ARBEITSMITTEL
+        - VERPACKUNG_TRANSPORT
+        - UEBRIGE_BETRIEBSAUSGABEN
+        - SONSTIGE_GRUNDSTUECKSAUFWENDUNGEN

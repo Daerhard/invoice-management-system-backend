@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
 import java.time.LocalDate
-import java.util.*
+import java.util.Optional
 
 @Repository
 interface CardmarketOrderRepository: CrudRepository<CardmarketOrder, Int> {
@@ -27,5 +27,14 @@ interface CardmarketOrderRepository: CrudRepository<CardmarketOrder, Int> {
 
     @EntityGraph(attributePaths = ["customer", "orderItems", "orderItems.card"])
     fun findByCustomerUserName(userName: String): List<CardmarketOrder>
+
+    @Query("SELECT COALESCE(SUM(o.totalValue), 0.0) FROM CardmarketOrder o WHERE YEAR(o.dateOfPayment) = :year")
+    fun sumTotalValueByYear(year: Int): Double?
+
+    @Query("SELECT COALESCE(SUM(o.shipmentCost), 0.0) FROM CardmarketOrder o WHERE YEAR(o.dateOfPayment) = :year")
+    fun sumShipmentCostByYear(year: Int): Double?
+
+    @Query("SELECT COALESCE(SUM(o.commission), 0.0) FROM CardmarketOrder o WHERE YEAR(o.dateOfPayment) = :year")
+    fun sumCommissionByYear(year: Int): Double?
 
 }

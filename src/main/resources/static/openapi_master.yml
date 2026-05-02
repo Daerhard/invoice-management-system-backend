@@ -76,6 +76,18 @@ paths:
   /v1/email/invoice/{orderId}:
     $ref: "./openapi_e-mail_service.yml#/paths/~1v1~1email~1invoice~1{orderId}"
 
+  # EÜR (Einnahmenüberschussrechnung)
+  /v1/euer:
+    $ref: "./openapi_euer.yml#/paths/~1v1~1euer"
+  /v1/euer/{id}:
+    $ref: "./openapi_euer.yml#/paths/~1v1~1euer~1{id}"
+  /v1/euer/{id}/publish:
+    $ref: "./openapi_euer.yml#/paths/~1v1~1euer~1{id}~1publish"
+  /v1/euer/{id}/positions:
+    $ref: "./openapi_euer.yml#/paths/~1v1~1euer~1{id}~1positions"
+  /v1/euer/{id}/positions/{positionId}:
+    $ref: "./openapi_euer.yml#/paths/~1v1~1euer~1{id}~1positions~1{positionId}"
+
 components:
   schemas:
     # Customers, Users and Orders
@@ -121,3 +133,15 @@ components:
       $ref: "./openapi_e-mail_service.yml#/components/schemas/invoiceEmailRequest"
     emailSendResponse:
       $ref: "./openapi_e-mail_service.yml#/components/schemas/emailSendResponse"
+
+    # EÜR (Einnahmenüberschussrechnung)
+    createEuerRequest:
+      $ref: "./openapi_euer.yml#/components/schemas/createEuerRequest"
+    euerReport:
+      $ref: "./openapi_euer.yml#/components/schemas/euerReport"
+    euerPosition:
+      $ref: "./openapi_euer.yml#/components/schemas/euerPosition"
+    euerPositionRequest:
+      $ref: "./openapi_euer.yml#/components/schemas/euerPositionRequest"
+    euerSection:
+      $ref: "./openapi_euer.yml#/components/schemas/euerSection"

@@ -1,11 +1,8 @@
 package invoice.management.system.repositories
 
-import invoice.management.system.entities.Refund
+import invoice.management.system.entities.EuerPosition
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface RefundRepository : JpaRepository<Refund, Int> {
-
-    fun findByYear(year: Int): List<Refund>
-}
+interface EuerPositionRepository : JpaRepository<EuerPosition, Long>
