@@ -43,9 +43,7 @@ class EuerService(
 
         val report = euerReportRepository.save(EuerReport(year = year))
         autoCalculatePositions(report, year)
-
-        val saved = euerReportRepository.findById(report.id).orElseThrow()
-        return ResponseEntity(saved.toDto(), HttpStatus.CREATED)
+        return ResponseEntity(report.toDto(), HttpStatus.CREATED)
     }
 
     @Transactional(readOnly = true)
@@ -136,7 +134,7 @@ class EuerService(
     }
 
     private fun savePosition(report: EuerReport, section: EuerSection, description: String, value: BigDecimal) {
-        euerPositionRepository.save(
+        val position = euerPositionRepository.save(
             EuerPosition(
                 section = section,
                 description = description,
@@ -145,5 +143,6 @@ class EuerService(
                 euerReport = report
             )
         )
+        report.positions.add(position)
     }
 }
